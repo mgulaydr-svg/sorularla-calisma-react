@@ -166,7 +166,6 @@ function App() {
       </header>
 
       {/* 2. BEYAZ ALAN: AÇIKLAMALI VE RENKLİ NAVİGASYON */}
-      // State'e bunu ekle: const [isMenuOpen, setIsMenuOpen] = useState(false);
 
       <nav style={{ 
         backgroundColor: '#fff', padding: '20px 40px', borderBottom: '1px solid #e2e8f0',
