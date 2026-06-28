@@ -77,23 +77,26 @@ function RichText({ text }) {
   };
 
   // Büyük kod bloğunu (pre) ekrana basar
+  // Büyük kod bloğunu (pre) ekrana basar
   const flushCode = () => {
     if (currentCodeBlock.length > 0) {
       elements.push(
         <pre 
           key={`code-${elements.length}`} 
           style={{
-            backgroundColor: '#f8fafc', // Esti Biraz tarzı çok açık gri/mavi arka plan
-            color: '#334155', // Koyu gri metin rengi
-            padding: '16px',
-            borderRadius: '12px', // Daha yuvarlak köşeler
+            backgroundColor: '#f1f5f9', // Ana beyazdan ayrışan şık gri/mavi
+            color: '#1e293b',
+            padding: '12px 16px',
+            borderRadius: '8px',
             fontFamily: "'Fira Code', 'Courier New', monospace",
-            fontSize: '14px',
+            fontSize: '13px', // Kodları biraz daha derli toplu yaptık
             overflowX: 'auto',
-            margin: '15px 0',
-            lineHeight: '1.6',
-            border: '1px solid #e2e8f0', // Yumuşak bir sınır çizgisi
-            boxShadow: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.02)' // Hafif iç gölge
+            maxHeight: '250px', // DEV BEYAZ KUTU SORUNUNUN ÇÖZÜMÜ (Maksimum Boy)
+            overflowY: 'auto',  // Taşan kodlar için dikey kaydırma
+            margin: '12px 0',
+            lineHeight: '1.5',
+            border: '1px solid #cbd5e1',
+            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.04)'
           }}
         >
           <code>{currentCodeBlock.join('\n')}</code>

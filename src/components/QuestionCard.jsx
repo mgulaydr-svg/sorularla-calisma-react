@@ -145,21 +145,51 @@ function QuestionCard({
         </div>
       </div>
 
-      {/* Geri Bildirim ve Çözüm Açıklaması (Geri Getirildi) */}
+      {/* 🌟 AKADEMİK GERİ BİLDİRİM VE ÇÖZÜM ALANI */}
       {selectedAnswer && (
-        <div style={{ marginTop: '20px', padding: '25px', borderRadius: '12px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderLeft: `5px solid ${selectedAnswer === question.correct ? '#10b981' : '#f59e0b'}`, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
-          <h4 style={{ margin: '0 0 10px 0', color: selectedAnswer === question.correct ? '#166534' : '#9a3412', fontSize: '16px', fontWeight: '700' }}>
-            {selectedAnswer === question.correct ? '🎉 Doğru Cevap!' : '📋 Yanlış Cevap!'}
-          </h4>
-          <p style={{ margin: '0 0 15px 0', fontSize: '15px', color: '#334155' }}>
-            <strong>Doğru Şık:</strong> {question.correct}) <RichText text={question.options?.[question.correct]} />
-          </p>
+        <div style={{ marginTop: '25px' }}>
+          
+          {/* 1. Doğru/Yanlış Durum Bildirimi (Kompakt ve Net) */}
+          <div style={{ 
+            padding: '16px 20px', borderRadius: '10px', 
+            backgroundColor: selectedAnswer === question.correct ? '#ecfdf5' : '#fef2f2', 
+            border: `1px solid ${selectedAnswer === question.correct ? '#a7f3d0' : '#fecaca'}`,
+            display: 'flex', alignItems: 'center', gap: '15px',
+            marginBottom: question.explanation ? '15px' : '0'
+          }}>
+            <div style={{ fontSize: '24px' }}>{selectedAnswer === question.correct ? '✅' : '❌'}</div>
+            <div>
+              <h4 style={{ margin: '0 0 5px 0', color: selectedAnswer === question.correct ? '#065f46' : '#991b1b', fontSize: '16px' }}>
+                {selectedAnswer === question.correct ? 'Tebrikler, Doğru Cevap!' : 'Maalesef Yanlış Cevap'}
+              </h4>
+              <p style={{ margin: 0, fontSize: '14px', color: selectedAnswer === question.correct ? '#047857' : '#b91c1c' }}>
+                <strong>Doğru Şık:</strong> {question.correct}) <RichText text={question.options?.[question.correct]} />
+              </p>
+            </div>
+          </div>
+
+          {/* 2. Akademik Çözümleme Notu (Renkli ve Vurgulu) */}
           {question.explanation && (
-            <div style={{ paddingTop: '15px', borderTop: '1px solid #e2e8f0', fontSize: '15px', color: '#475569', lineHeight: '1.6' }}>
-              <strong style={{ display: 'block', marginBottom: '8px', color: '#1e293b' }}>Çözüm Çözümleme Notu:</strong>
-              <RichText text={question.explanation} />
+            <div style={{ 
+              padding: '25px', borderRadius: '10px', 
+              backgroundColor: '#eff6ff', // Eğitim portalına uygun ferah pastel mavi
+              border: '1px solid #bfdbfe',
+              borderLeft: '5px solid #2563eb', // Derin mavi vurgu çizgisi
+              color: '#1e293b',
+              boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.05)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', borderBottom: '1px solid #dbeafe', paddingBottom: '10px' }}>
+                <span style={{ fontSize: '18px' }}>📖</span>
+                <h4 style={{ margin: 0, color: '#1d4ed8', fontSize: '14px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Akademik Çözümleme ve Analiz
+                </h4>
+              </div>
+              <div style={{ fontSize: '15px', lineHeight: '1.7', color: '#334155' }}>
+                <RichText text={question.explanation} />
+              </div>
             </div>
           )}
+          
         </div>
       )}
 
