@@ -17,6 +17,7 @@ function App() {
   // Filtre State'leri
   const [largeDeckFilter, setLargeDeckFilter] = useState('all');
   const [smallDeckFilter, setSmallDeckFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState(''); // Yeni Arama State'i
 
   useEffect(() => {
     const savedQuestions = readJson(KEYS.bank, null);
@@ -32,10 +33,30 @@ function App() {
 
   // Soruları filtrelere göre süz (State değiştiğinde otomatik çalışır)
   const filteredQuestions = questions.filter(q => {
+    // 1. Deste Filtreleri
     if (largeDeckFilter !== 'all' && q.largeDeck !== largeDeckFilter) return false;
     if (smallDeckFilter !== 'all' && q.smallDeck !== smallDeckFilter) return false;
+    
+    // 2. Metin ve Etiket (Tag) Araması
+    if (searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase();
+      // Sorunun metnini, açıklamasını ve etiketlerini birleştirip içinde arıyoruz
+      const textToSearch = `
+        ${q.question || ''} 
+        ${q.explanation || ''} 
+        ${q.tags ? q.tags.join(' ') : ''}
+      `.toLowerCase();
+      
+      if (!textToSearch.includes(query)) return false;
+    }
+    
     return true;
   });
+
+  // Arama veya deste değiştiğinde ilk soruya dön
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [largeDeckFilter, smallDeckFilter, searchQuery]);
 
   // Filtre değiştiğinde ilk soruya dön
   useEffect(() => {
@@ -101,6 +122,8 @@ function App() {
         setLargeDeckFilter={setLargeDeckFilter}
         smallDeckFilter={smallDeckFilter}
         setSmallDeckFilter={setSmallDeckFilter}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
       />
 
       <main style={{ flex: 1, padding: '40px', overflowY: 'auto' }}>

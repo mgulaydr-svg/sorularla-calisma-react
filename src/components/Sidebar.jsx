@@ -1,13 +1,10 @@
 import React from 'react';
 
 function Sidebar({ 
-  questions, 
-  currentMode, 
-  setMode, 
-  largeDeckFilter, 
-  setLargeDeckFilter, 
-  smallDeckFilter, 
-  setSmallDeckFilter 
+  questions, currentMode, setMode, 
+  largeDeckFilter, setLargeDeckFilter, 
+  smallDeckFilter, setSmallDeckFilter,
+  searchQuery, setSearchQuery // Yeni eklenen proplar
 }) {
   // Benzersiz ana desteleri bul (Örn: Flutter, Halk Sağlığı)
   const largeDecks = [...new Set(questions.map(q => q.largeDeck).filter(Boolean))].sort();
@@ -63,6 +60,16 @@ function Sidebar({
         <div style={{ backgroundColor: '#fff', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
           <h3 style={{ fontSize: '14px', margin: '0 0 10px 0', color: '#334155' }}>🎯 Deste Seçimi</h3>
           
+          {/* YENİ EKLENEN ARAMA KUTUSU BURAYA GELDİ */}
+          <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '5px' }}>Kelime veya Etiket Ara</label>
+          <input 
+            type="text" 
+            placeholder="Örn: widget, enfeksiyon..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ width: '100%', padding: '8px', marginBottom: '15px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }}
+          />
+
           <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '5px' }}>Ana Deste</label>
           <select 
             value={largeDeckFilter} 
