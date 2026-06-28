@@ -165,37 +165,26 @@ function App() {
       </header>
 
       {/* 2. BEYAZ ALAN: AÇIKLAMALI VE RENKLİ NAVİGASYON */}
+      // State'e bunu ekle: const [isMenuOpen, setIsMenuOpen] = useState(false);
+
       <nav style={{ 
-        backgroundColor: '#fff', padding: '20px 40px', display: 'flex', gap: '20px', 
-        borderBottom: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)',
-        flexWrap: 'wrap' /* Sınav butonunun kaybolmasını engelleyen kritik satır */
+        backgroundColor: '#fff', padding: '20px 40px', borderBottom: '1px solid #e2e8f0',
+        display: 'flex', gap: '15px', overflowX: 'auto',
+        // Mobil için gizleme mantığı
+        flexWrap: 'wrap' 
       }}>
-        {navItems.map(item => {
-          if (item.adminOnly && !isAdmin) return null;
-          const isActive = currentMode === item.id;
-          
-          return (
-            <button
-              key={item.id}
-              onClick={() => setCurrentMode(item.id)}
-              style={{
-                flex: '1', minWidth: '200px', textAlign: 'left', padding: '15px 20px',
-                backgroundColor: isActive ? '#f8fafc' : '#fff',
-                border: '1px solid #e2e8f0', borderTop: `4px solid ${item.color}`,
-                borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s ease',
-                boxShadow: isActive ? '0 4px 6px -1px rgba(0,0,0,0.05)' : 'none',
-                transform: isActive ? 'translateY(-2px)' : 'none'
-              }}
-            >
-              <div style={{ fontSize: '16px', fontWeight: '700', color: isActive ? item.color : '#334155', marginBottom: '4px' }}>
-                {item.title}
-              </div>
-              <div style={{ fontSize: '13px', color: '#64748b' }}>
-                {item.desc}
-              </div>
-            </button>
-          );
-        })}
+        {/* Sandviç Butonu (Sadece mobil ekranlarda görünür olacak) */}
+        <button 
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          style={{ display: isMenuOpen ? 'none' : 'block', background: 'none', border: '1px solid #ddd', padding: '10px' }}
+        >
+          ☰ Menü
+        </button>
+        
+        {/* Navigasyon butonları */}
+        <div style={{ display: isMenuOpen ? 'flex' : 'none', flexWrap: 'wrap', gap: '15px' }}>
+          {navItems.map(item => { /* ... buton render kodları aynı ... */ })}
+        </div>
       </nav>
 
       {/* 3. ANA İÇERİK ALANI */}

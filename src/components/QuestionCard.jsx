@@ -38,6 +38,21 @@ function QuestionCard({
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {['A', 'B', 'C', 'D', 'E'].map((letter) => {
           const optionText = question.options[letter];
+
+      // ... QuestionCard içindeki return kısmında:
+
+      {isEditing ? (
+        <div style={{ padding: '20px', backgroundColor: '#fff', border: '2px solid #0ea5e9', borderRadius: '8px' }}>
+          <textarea value={question.question} onChange={(e) => {/* güncelleyici */}} style={{ width: '100%' }} />
+          {/* Şıklar ve Açıklama için inputlar */}
+          <button onClick={() => setIsEditing(false)}>Kaydet</button>
+        </div>
+      ) : (
+        <div>
+          {/* Mevcut Soru Gösterimi */}
+          <button onClick={() => setIsEditing(true)}>✎ Düzenle</button>
+        </div>
+      )}
           
           // Varsayılan buton stili
           let buttonStyle = {
