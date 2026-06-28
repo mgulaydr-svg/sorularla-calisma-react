@@ -213,7 +213,7 @@ function App() {
         
         {currentMode === 'data' && isAdmin && (
           <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '30px' }}>
-            <DataExport questions={questions} />
+            <DataExport questions={questions} setQuestions={setQuestions} />
             
             {/* YAPAY ZEKA PROMPT KILAVUZ ALANI */}
             <div style={{ padding: '25px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderTop: '4px solid #8b5cf6', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
