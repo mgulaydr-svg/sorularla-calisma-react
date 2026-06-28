@@ -146,16 +146,53 @@ function App() {
 
   return (
     <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', textAlign: 'left' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', backgroundColor: '#0284c7', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <div style={{ backgroundColor: '#fff', width: '45px', height: '45px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-            <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+      <header style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        padding: '20px 40px', 
+        backgroundColor: '#0284c7', 
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' 
+      }}>
+        {/* LOGO VE BAŞLIK ALANI */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div style={{ 
+            backgroundColor: '#fff', 
+            width: '60px',  /* Logoyu büyüttük */
+            height: '60px', /* Logoyu büyüttük */
+            borderRadius: '12px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.2)', 
+            overflow: 'hidden',
+            padding: '4px'
+          }}>
+            <img 
+              src="/logo.jpg" /* Uzantıyı .jpg yaptık */
+              alt="Logo" 
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+            />
           </div>
-          <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: '#ffffff' }}>Sorularla Çalışma Platformu</h1>
+          <h1 style={{ margin: 0, fontSize: '26px', fontWeight: '700', color: '#ffffff' }}>
+            Sorularla Çalışma Platformu
+          </h1>
         </div>
+
         <div style={{ display: 'flex', gap: '25px', fontSize: '14px', alignItems: 'center', color: '#e0f2fe' }}>
           <span>📅 {currentDate}</span>
-          <button onClick={handleAdminLogin} style={{ padding: '8px 16px', backgroundColor: isAdmin ? '#b91c1c' : '#0369a1', border: '1px solid #38bdf8', borderRadius: '6px', color: '#fff', fontWeight: '600', cursor: 'pointer' }}>
+          <button 
+            onClick={handleAdminLogin} 
+            style={{ 
+              padding: '10px 20px', 
+              backgroundColor: isAdmin ? '#b91c1c' : '#0369a1', 
+              border: '1px solid #38bdf8', 
+              borderRadius: '6px', 
+              color: '#fff', 
+              fontWeight: '600', 
+              cursor: 'pointer' 
+            }}
+          >
             {isAdmin ? '🔒 Güvenli Çıkış' : '🔑 Yönetici Girişi'}
           </button>
         </div>
