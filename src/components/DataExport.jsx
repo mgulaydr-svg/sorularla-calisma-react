@@ -8,6 +8,9 @@ function DataExport({ questions, setQuestions }) {
   const [bulkSmallDeck, setBulkSmallDeck] = useState(''); // Yeni atanacak Alt Deste
   const [editingId, setEditingId] = useState(null); // Tablo içi düzenleme için
   const [editFormData, setEditFormData] = useState({});
+  // Benzersiz desteleri çıkartıyoruz
+  const uniqueLargeDecks = [...new Set(questions.map(q => q.largeDeck).filter(Boolean))].sort();
+  const uniqueSmallDecks = [...new Set(questions.map(q => q.smallDeck).filter(Boolean))].sort();
 
   // 1. YAPAY ZEKA JSON İÇE AKTARMA
   const handleImport = () => {
@@ -92,7 +95,12 @@ function DataExport({ questions, setQuestions }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-      
+      <datalist id="bulk-large-decks">
+        {uniqueLargeDecks.map(deck => <option key={deck} value={deck} />)}
+      </datalist>
+      <datalist id="bulk-small-decks">
+        {uniqueSmallDecks.map(deck => <option key={deck} value={deck} />)}
+      </datalist>
       {/* ÜST PANEL: İÇE AKTARMA */}
       <div style={{ padding: '25px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
         <h3 style={{ marginTop: 0, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -114,16 +122,21 @@ function DataExport({ questions, setQuestions }) {
       {selectedIds.length > 0 && (
         <div style={{ padding: '20px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
           <strong style={{ color: '#166534' }}>{selectedIds.length} Soru Seçildi</strong>
+          
           <input 
+            list="bulk-large-decks" /* İŞTE BURAYA EKLENDİ */
             type="text" placeholder="Yeni Ana Deste Adı..." 
             value={bulkLargeDeck} onChange={(e) => setBulkLargeDeck(e.target.value)} 
             style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', flex: 1, minWidth: '150px' }}
           />
+          
           <input 
+            list="bulk-small-decks" /* İŞTE BURAYA EKLENDİ */
             type="text" placeholder="Yeni Alt Deste Adı..." 
             value={bulkSmallDeck} onChange={(e) => setBulkSmallDeck(e.target.value)} 
             style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', flex: 1, minWidth: '150px' }}
           />
+          
           <button onClick={applyBulkEdit} style={{ padding: '8px 16px', backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '600', cursor: 'pointer' }}>
             Toplu Taşı / Düzenle
           </button>
