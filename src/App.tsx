@@ -5,6 +5,7 @@ import QuestionCard from './components/QuestionCard.jsx';
 import Stats from './components/Stats.jsx';
 import DataExport from './components/DataExport.jsx';
 import Exam from './components/Exam.jsx';
+import { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from './cloud.js';
 import './App.css';
 
 function App() {
@@ -34,6 +35,19 @@ function App() {
     setProgress(savedProgress);
   }, []);
 
+  // Firebase Auth Dinleyicisi
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      // Sadece senin e-postan ile giriş yapıldıysa admin yetkisi ver
+      if (user && user.email === 'mgulaydr@gmail.com') {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    });
+    return () => unsubscribe(); // Bileşen kapandığında dinlemeyi durdur
+  }, []);
+
   // Soruları Kaydetme ve Güncelleme Mekanizması (Admin Özel)
   const handleSaveQuestion = (updatedQuestion) => {
     const updatedPool = questions.map(q => q.id === updatedQuestion.id ? updatedQuestion : q);
@@ -52,6 +66,23 @@ function App() {
     }
     return true;
   });
+
+  const handleAdminLogin = () => {
+    if (isAdmin) {
+      signOut(auth).then(() => alert('Güvenli çıkış yapıldı.'));
+    } else {
+      const email = prompt("Yönetici E-posta Adresi:");
+      if (!email) return;
+      const password = prompt("Şifre:");
+      if (!password) return;
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => alert('Yönetici girişi başarılı! Tüm yetkiler açıldı.'))
+        .catch(error => {
+          alert('Giriş başarısız: ' + error.message);
+        });
+    }
+  };
 
   useEffect(() => {
     setCurrentIndex(0);
@@ -137,6 +168,12 @@ function App() {
           <span>👥 Canlı Ziyaretçi: 1</span>
           <button 
             onClick={() => { setIsAdmin(!isAdmin); alert(isAdmin ? 'Yönetici çıkışı yapıldı.' : 'Yönetici girişi simüle edildi! Düzenleme yetkileri açıldı.'); }}
+            style={{ padding: '8px 16px', backgroundColor: isAdmin ? '#b91c1c' : '#0369a1', border: '1px solid #38bdf8', borderRadius: '6px', color: '#fff', fontWeight: '600', cursor: 'pointer' }}
+          >
+            {isAdmin ? '🔒 Güvenli Çıkış' : '🔑 Yönetici Girişi'}
+          </button>
+          <button 
+            onClick={handleAdminLogin}
             style={{ padding: '8px 16px', backgroundColor: isAdmin ? '#b91c1c' : '#0369a1', border: '1px solid #38bdf8', borderRadius: '6px', color: '#fff', fontWeight: '600', cursor: 'pointer' }}
           >
             {isAdmin ? '🔒 Güvenli Çıkış' : '🔑 Yönetici Girişi'}
