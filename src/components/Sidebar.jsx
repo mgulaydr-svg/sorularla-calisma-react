@@ -53,6 +53,9 @@ function Sidebar({
         <button style={buttonStyle('data')} onClick={() => setMode('data')}>
           <span>⚙️</span> Veri Yönetimi
         </button>
+        <button style={buttonStyle('exam')} onClick={() => setMode('exam')}>
+          <span>🎓</span> Sınav Modu
+        </button>
       </nav>
 
       {/* Deste Filtreleme Alanı - Sadece Study modunda aktif */}

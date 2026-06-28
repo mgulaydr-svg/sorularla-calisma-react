@@ -5,6 +5,7 @@ import QuestionCard from './components/QuestionCard.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import DataExport from './components/DataExport.jsx';
 import Stats from './components/Stats.jsx';
+import Exam from './components/Exam.jsx';
 import './App.css';
 
 function App() {
@@ -162,6 +163,11 @@ function App() {
             <DataExport questions={questions} />
           </div>
         )}
+
+        {currentMode === 'exam' && (
+          <Exam questions={questions} />
+        )}
+        
       </main>
     </div>
   );
