@@ -101,8 +101,32 @@ function App() {
     <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
       
       {/* HEADER */}
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', backgroundColor: '#0284c7', color: '#fff', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-        <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '700' }}>📚 Sorularla Çalışma Platformu</h1>
+      <header style={{ 
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+        padding: '20px 40px', backgroundColor: '#0284c7', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' 
+      }}>
+        
+        {/* LOGO VE BAŞLIK ALANI */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          
+          {/* Logo Görseli: src içindeki linki kendi logonun URL'si ile değiştirebilirsin */}
+          <div style={{ 
+            backgroundColor: '#fff', width: '45px', height: '45px', borderRadius: '10px', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)', overflow: 'hidden'
+          }}>
+            <img 
+              src="[https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/1200px-React-icon.svg.png](https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/1200px-React-icon.svg.png)" 
+              alt="Logo" 
+              style={{ width: '80%', height: '80%', objectFit: 'contain' }} 
+            />
+          </div>
+
+          <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: '#ffffff' }}>
+            Sorularla Çalışma Platformu
+          </h1>
+        </div>
+
         <div style={{ display: 'flex', gap: '25px', fontSize: '14px', alignItems: 'center', color: '#e0f2fe' }}>
           <span>📅 {currentDate}</span>
           <span>👥 Canlı Ziyaretçi: 1</span>
