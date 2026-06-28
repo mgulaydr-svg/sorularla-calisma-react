@@ -4,6 +4,7 @@ import { KEYS, readJson, writeJson } from './utils/storage.js';
 import QuestionCard from './components/QuestionCard.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import DataExport from './components/DataExport.jsx';
+import Stats from './components/Stats.jsx';
 import './App.css';
 
 function App() {
@@ -129,10 +130,7 @@ function App() {
         )}
 
         {currentMode === 'stats' && (
-          <div>
-            <h1>İstatistikler</h1>
-            <p>Çok yakında burada detaylı analizler yer alacak...</p>
-          </div>
+          <Stats questions={questions} progress={progress} />
         )}
 
         {currentMode === 'data' && (
