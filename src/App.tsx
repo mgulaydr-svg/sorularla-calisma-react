@@ -168,43 +168,41 @@ function App() {
       {/* 2. BEYAZ ALAN: AÇIKLAMALI VE RENKLİ NAVİGASYON */}
 
       <nav style={{ 
-        backgroundColor: '#fff', padding: '20px 40px', borderBottom: '1px solid #e2e8f0',
-        display: 'flex', gap: '15px', overflowX: 'auto', flexWrap: 'wrap' 
+        backgroundColor: '#fff', 
+        padding: '20px 40px', 
+        borderBottom: '1px solid #e2e8f0', 
+        display: 'flex', 
+        gap: '15px', 
+        flexWrap: 'wrap', // Ekran daralırsa aşağı kayar, butonlar bozulmaz
+        alignItems: 'center'
       }}>
-        {/* Sandviç Butonu */}
-        <button 
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          style={{ background: 'none', border: '1px solid #ddd', padding: '10px', borderRadius: '4px', cursor: 'pointer' }}
-        >
-          {isMenuOpen ? '✕ Kapat' : '☰ Menü'}
-        </button>
-        
-        {/* Navigasyon butonları: isMenuOpen true ise göster */}
-        {isMenuOpen && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
-            {navItems.map(item => {
-              if (item.adminOnly && !isAdmin) return null;
-              const isActive = currentMode === item.id;
-              
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setCurrentMode(item.id)}
-                  style={{
-                    minWidth: '150px', textAlign: 'left', padding: '10px 15px',
-                    backgroundColor: isActive ? '#f8fafc' : '#fff',
-                    border: '1px solid #e2e8f0', borderTop: `4px solid ${item.color}`,
-                    borderRadius: '8px', cursor: 'pointer'
-                  }}
-                >
-                  <div style={{ fontSize: '14px', fontWeight: '700', color: isActive ? item.color : '#334155' }}>
-                    {item.title}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
+        {navItems.map(item => {
+          if (item.adminOnly && !isAdmin) return null;
+          const isActive = currentMode === item.id;
+          
+          return (
+            <button
+              key={item.id}
+              onClick={() => setCurrentMode(item.id)}
+              style={{
+                textAlign: 'left', 
+                padding: '12px 20px',
+                backgroundColor: isActive ? '#f8fafc' : '#fff',
+                border: '1px solid #e2e8f0', 
+                borderTop: `4px solid ${item.color}`,
+                borderRadius: '8px', 
+                cursor: 'pointer', 
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                flexDirection: 'column'
+              }}
+            >
+              <span style={{ fontSize: '14px', fontWeight: '700', color: isActive ? item.color : '#334155' }}>
+                {item.title}
+              </span>
+            </button>
+          );
+        })}
       </nav>
 
       {/* 3. ANA İÇERİK ALANI */}
