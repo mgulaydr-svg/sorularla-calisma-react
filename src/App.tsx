@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { QUESTIONS } from './utils/questions.js';
 import { KEYS, readJson, writeJson } from './utils/storage.js';
+import { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged, db, collection, getDocs, doc, setDoc, writeBatch, deleteDoc } from './cloud.js';
 import QuestionCard from './components/QuestionCard.jsx';
 import Stats from './components/Stats.jsx';
 import DataExport from './components/DataExport.jsx';
 import Exam from './components/Exam.jsx';
-import { auth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from './cloud.js';
 import './App.css';
 
 function App() {
@@ -15,57 +15,40 @@ function App() {
   const [sessionAnswers, setSessionAnswers] = useState({});
   const [currentMode, setCurrentMode] = useState('study');
 
-  // Filtreler
   const [largeDeckFilter, setLargeDeckFilter] = useState('all');
   const [smallDeckFilter, setSmallDeckFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Gelişmiş Yetki Katmanı (Gerçekte Firebase Auth ile bağlanacak)
   const [isAdmin, setIsAdmin] = useState(false); 
 
+  // 1. FIREBASE: UYGULAMA AÇILDIĞINDA SORULARI BULUTTAN ÇEK
   useEffect(() => {
-    const savedQuestions = readJson(KEYS.bank, null);
-    const savedProgress = readJson(KEYS.progress, {});
-
-    if (savedQuestions && savedQuestions.length > 0) {
-      setQuestions(savedQuestions);
-    } else {
-      setQuestions(QUESTIONS);
-    }
-    setProgress(savedProgress);
+    const fetchQuestions = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, 'questions'));
+        if (!snapshot.empty) {
+          const cloudData = snapshot.docs.map(d => d.data());
+          setQuestions(cloudData);
+        } else {
+          setQuestions(QUESTIONS); // Bulut boşsa varsayılanı yükle
+        }
+      } catch (error) {
+        console.error("Bulut bağlantı hatası, yerel veriler yükleniyor:", error);
+        setQuestions(readJson(KEYS.bank, QUESTIONS));
+      }
+    };
+    
+    fetchQuestions();
+    setProgress(readJson(KEYS.progress, {}));
   }, []);
 
-  // Firebase Auth Dinleyicisi
+  // 2. FIREBASE: YÖNETİCİ KONTROLÜ
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // Sadece senin e-postan ile giriş yapıldıysa admin yetkisi ver
-      if (user && user.email === 'mgulaydr@gmail.com') {
-        setIsAdmin(true);
-      } else {
-        setIsAdmin(false);
-      }
+      if (user && user.email === 'mgulaydr@gmail.com') setIsAdmin(true);
+      else setIsAdmin(false);
     });
-    return () => unsubscribe(); // Bileşen kapandığında dinlemeyi durdur
+    return () => unsubscribe();
   }, []);
-
-  // Soruları Kaydetme ve Güncelleme Mekanizması (Admin Özel)
-  const handleSaveQuestion = (updatedQuestion) => {
-    const updatedPool = questions.map(q => q.id === updatedQuestion.id ? updatedQuestion : q);
-    setQuestions(updatedPool);
-    writeJson(KEYS.bank, updatedPool); // LocalStorage Güncellemesi
-  };
-
-  const filteredQuestions = questions.filter(q => {
-    if (largeDeckFilter !== 'all' && q.largeDeck !== largeDeckFilter) return false;
-    if (smallDeckFilter !== 'all' && q.smallDeck !== smallDeckFilter) return false;
-    
-    if (searchQuery.trim() !== '') {
-      const query = searchQuery.toLowerCase();
-      const textToSearch = `${q.question || ''} ${q.explanation || ''} ${q.tags ? q.tags.join(' ') : ''}`.toLowerCase();
-      if (!textToSearch.includes(query)) return false;
-    }
-    return true;
-  });
 
   const handleAdminLogin = () => {
     if (isAdmin) {
@@ -75,36 +58,69 @@ function App() {
       if (!email) return;
       const password = prompt("Şifre:");
       if (!password) return;
-
       signInWithEmailAndPassword(auth, email, password)
-        .then(() => alert('Yönetici girişi başarılı! Tüm yetkiler açıldı.'))
-        .catch(error => {
-          alert('Giriş başarısız: ' + error.message);
-        });
+        .then(() => alert('Yönetici girişi başarılı! Bulut yetkileri açıldı.'))
+        .catch(error => alert('Giriş başarısız: ' + error.message));
     }
   };
 
-  useEffect(() => {
-    setCurrentIndex(0);
-  }, [largeDeckFilter, smallDeckFilter, searchQuery]);
+  // 3. FIREBASE: TEK SORU GÜNCELLEME (QuestionCard'dan gelir)
+  const handleSaveQuestion = async (updatedQuestion) => {
+    const updatedPool = questions.map(q => q.id === updatedQuestion.id ? updatedQuestion : q);
+    setQuestions(updatedPool);
+    if (isAdmin) {
+      try { await setDoc(doc(db, 'questions', updatedQuestion.id.toString()), updatedQuestion); } 
+      catch (error) { console.error("Buluta kaydedilemedi", error); }
+    }
+  };
+
+  // 4. FIREBASE: TOPLU GÜNCELLEME (DataExport'tan gelir)
+  const handleSyncPool = async (newPool) => {
+    setQuestions(newPool);
+    if (isAdmin) {
+      try {
+        const batch = writeBatch(db);
+        newPool.forEach(q => batch.set(doc(db, 'questions', q.id.toString()), q));
+        await batch.commit();
+        alert("Tüm değişiklikler başarıyla buluta eşitlendi!");
+      } catch (error) { alert("Bulut eşitleme hatası: " + error.message); }
+    }
+  };
+
+  // 5. FIREBASE: SORU SİLME (DataExport'tan gelir)
+  const handleDeleteQuestion = async (id) => {
+    const updatedPool = questions.filter(q => q.id !== id);
+    setQuestions(updatedPool);
+    if (isAdmin) {
+      try { await deleteDoc(doc(db, 'questions', id.toString())); } 
+      catch (error) { console.error("Buluttan silinemedi", error); }
+    }
+  };
+
+  const filteredQuestions = questions.filter(q => {
+    if (largeDeckFilter !== 'all' && q.largeDeck !== largeDeckFilter) return false;
+    if (smallDeckFilter !== 'all' && q.smallDeck !== smallDeckFilter) return false;
+    if (searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase();
+      const textToSearch = `${q.question || ''} ${q.explanation || ''}`.toLowerCase();
+      if (!textToSearch.includes(query)) return false;
+    }
+    return true;
+  });
+
+  useEffect(() => { setCurrentIndex(0); }, [largeDeckFilter, smallDeckFilter, searchQuery]);
 
   const handleAnswer = (letter) => {
     const currentQuestion = filteredQuestions[currentIndex];
     if (!currentQuestion) return;
-
     setSessionAnswers(prev => ({ ...prev, [currentQuestion.id]: letter }));
-
     const isCorrect = letter === currentQuestion.correct;
     setProgress(prevProgress => {
       const qProgress = prevProgress[currentQuestion.id] || { correct: 0, wrong: 0, learned: false };
-      const newStats = {
-        ...qProgress,
-        correct: isCorrect ? qProgress.correct + 1 : qProgress.correct,
-        wrong: !isCorrect ? qProgress.wrong + 1 : qProgress.wrong
-      };
+      const newStats = { ...qProgress, correct: isCorrect ? qProgress.correct + 1 : qProgress.correct, wrong: !isCorrect ? qProgress.wrong + 1 : qProgress.wrong };
       newStats.learned = (newStats.correct - newStats.wrong) >= 3;
       const updatedProgress = { ...prevProgress, [currentQuestion.id]: newStats };
-      writeJson(KEYS.progress, updatedProgress);
+      writeJson(KEYS.progress, updatedProgress); // Öğrenci gelişimi yerelde kalıyor
       return updatedProgress;
     });
   };
@@ -129,52 +145,22 @@ function App() {
   const availableSmallDecks = [...new Set(questions.filter(q => largeDeckFilter === 'all' || q.largeDeck === largeDeckFilter).map(q => q.smallDeck).filter(Boolean))].sort();
 
   return (
-    <div style={{ 
-      backgroundColor: '#f8fafc', 
-      minHeight: '100vh',
-      fontFamily: 'system-ui, sans-serif',
-      textAlign: 'left' /* İŞTE METİNLERİ NİZAMİ ŞEKİLDE SOLA YASLAYACAK SİHİRLİ KOD */
-    }}>
-      
-      {/* HEADER */}
-      <header style={{ 
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-        padding: '20px 40px', backgroundColor: '#0284c7', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' 
-      }}>
-        
-        {/* LOGO VE BAŞLIK ALANI */}
+    <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh', fontFamily: 'system-ui, sans-serif', textAlign: 'left' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', backgroundColor: '#0284c7', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <div style={{ 
-            backgroundColor: '#fff', width: '45px', height: '45px', borderRadius: '10px', 
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)', overflow: 'hidden'
-          }}>
-            <img 
-              src="/logo.png" 
-              alt="Logo" 
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
-            />
+          <div style={{ backgroundColor: '#fff', width: '45px', height: '45px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+            <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
-          <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: '#ffffff' }}>
-            Sorularla Çalışma Platformu
-          </h1>
+          <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: '#ffffff' }}>Sorularla Çalışma Platformu</h1>
         </div>
-
         <div style={{ display: 'flex', gap: '25px', fontSize: '14px', alignItems: 'center', color: '#e0f2fe' }}>
           <span>📅 {currentDate}</span>
-          <span>👥 Canlı Ziyaretçi: 1</span>
-          
-          {/* TEK VE GERÇEK YÖNETİCİ GİRİŞ BUTONU */}
-          <button 
-            onClick={handleAdminLogin}
-            style={{ padding: '8px 16px', backgroundColor: isAdmin ? '#b91c1c' : '#0369a1', border: '1px solid #38bdf8', borderRadius: '6px', color: '#fff', fontWeight: '600', cursor: 'pointer' }}
-          >
+          <button onClick={handleAdminLogin} style={{ padding: '8px 16px', backgroundColor: isAdmin ? '#b91c1c' : '#0369a1', border: '1px solid #38bdf8', borderRadius: '6px', color: '#fff', fontWeight: '600', cursor: 'pointer' }}>
             {isAdmin ? '🔒 Güvenli Çıkış' : '🔑 Yönetici Girişi'}
           </button>
         </div>
       </header>
 
-      {/* NAVİGASYON */}
       <nav style={{ backgroundColor: '#fff', padding: '10px 40px', borderBottom: '1px solid #e2e8f0', display: 'flex', gap: '15px' }}>
         {navItems.map(item => {
           if (item.adminOnly && !isAdmin) return null;
@@ -188,33 +174,19 @@ function App() {
         })}
       </nav>
 
-      {/* ANA PANEL */}
       <main style={{ padding: '40px', maxWidth: '1000px', margin: '0 auto' }}>
         {currentMode === 'study' && (
           <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-            
-            {/* Filtre Paneli */}
             <div style={{ display: 'flex', gap: '15px', marginBottom: '25px', backgroundColor: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-              <div style={{ flex: 1 }}><label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '5px', fontWeight: '600' }}>Metin / Etiket Ara</label><input type="text" placeholder="Kelime ara..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} /></div>
+              <div style={{ flex: 1 }}><label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '5px', fontWeight: '600' }}>Arama</label><input type="text" placeholder="Kelime ara..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} /></div>
               <div style={{ flex: 1 }}><label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '5px', fontWeight: '600' }}>Ana Deste</label><select value={largeDeckFilter} onChange={(e) => { setLargeDeckFilter(e.target.value); setSmallDeckFilter('all'); }} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}><option value="all">Tümü</option>{largeDecks.map(deck => <option key={deck} value={deck}>{deck}</option>)}</select></div>
               <div style={{ flex: 1 }}><label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '5px', fontWeight: '600' }}>Alt Deste</label><select value={smallDeckFilter} onChange={(e) => setSmallDeckFilter(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}><option value="all">Tümü</option>{availableSmallDecks.map(deck => <option key={deck} value={deck}>{deck}</option>)}</select></div>
             </div>
 
             {filteredQuestions.length > 0 ? (
-              <QuestionCard 
-              question={currentQuestion} 
-              currentIndex={currentIndex} 
-              totalQuestions={filteredQuestions.length} 
-              selectedAnswer={currentSelectedAnswer} 
-              onAnswer={handleAnswer} 
-              onNext={handleNext} 
-              onPrev={handlePrev} 
-              isAdmin={isAdmin} 
-              onSaveQuestion={handleSaveQuestion} 
-              allQuestions={questions} /* YENİ EKLENEN KISIM BURASI */
-            />
+              <QuestionCard question={currentQuestion} currentIndex={currentIndex} totalQuestions={filteredQuestions.length} selectedAnswer={currentSelectedAnswer} onAnswer={handleAnswer} onNext={handleNext} onPrev={handlePrev} isAdmin={isAdmin} onSaveQuestion={handleSaveQuestion} allQuestions={questions} />
             ) : (
-              <div style={{ padding: '20px', backgroundColor: '#fef2f2', color: '#991b1b', borderRadius: '8px' }}>Seçilen kriterlere uygun soru bulunamadı.</div>
+              <div style={{ padding: '20px', backgroundColor: '#fef2f2', color: '#991b1b', borderRadius: '8px' }}>Soru bulunamadı.</div>
             )}
           </div>
         )}
@@ -222,41 +194,10 @@ function App() {
         {currentMode === 'stats' && <Stats questions={questions} progress={progress} />}
         {currentMode === 'exam' && <Exam questions={questions} />}
         
+        {/* DATA EXPORT: Bulut senkronizasyon fonksiyonları prop olarak gönderiliyor */}
         {currentMode === 'data' && isAdmin && (
-          <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '30px' }}>
-            <DataExport questions={questions} setQuestions={setQuestions} />
-            
-            {/* YAPAY ZEKA PROMPT KILAVUZ ALANI */}
-            <div style={{ padding: '25px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderTop: '4px solid #8b5cf6', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
-              <h3 style={{ marginTop: 0, color: '#4c1d95' }}>🤖 Sihirli AI Soru Dönüştürücü Promptu</h3>
-              <p style={{ fontSize: '14px', color: '#4b5563', lineHeight: '1.5' }}>
-                Eğitim dökümanlarını, notlarını veya test sorularını sisteme tek seferde kusursuz yüklemek için aşağıdaki promptu kopyalayıp <strong>Gemini, ChatGPT veya Claude</strong>'a yapıştırabilirsin. Çıkan sonucu yukarıdaki içe aktarma alanına yüklemen yeterlidir.
-              </p>
-              <pre style={{ backgroundColor: '#f8fafc', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px', color: '#334155', whiteSpace: 'pre-wrap', fontFamily: 'monospace', lineHeight: '1.6' }}>
-{`Aşağıdaki eğitim notlarını/metni çoktan seçmeli soru kartlarına dönüştür. Lütfen çıktıyı SADECE kod blokları olmadan, ham ve geçerli bir JSON dizisi (array) formatında üret. Her soru objesi tam olarak şu yapıda olmalıdır:
-
-[
-  {
-    "id": "benzersiz_bir_string_veya_timestamp",
-    "largeDeck": "Ana Konu Başlığı (Örn: Flutter)",
-    "smallDeck": "Alt Konu Başlığı (Örn: Widgetlar)",
-    "question": "Soru metni... Kod kullanacaksan satır atlamaları için \\n kullan.",
-    "options": { 
-      "A": "A seçeneği metni", 
-      "B": "B seçeneği metni", 
-      "C": "C seçeneği metni", 
-      "D": "D seçeneği metni", 
-      "E": "E seçeneği metni" 
-    },
-    "correct": "A",
-    "explanation": "Doğru cevabın neden o şık olduğuna dair detaylı analiz..."
-  }
-]
-
-Metin Notları:
-[Ders Notunu Veya Ham Soruları Buraya Yapıştır]`}
-              </pre>
-            </div>
+          <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+            <DataExport questions={questions} onSyncPool={handleSyncPool} onDeleteQuestion={handleDeleteQuestion} />
           </div>
         )}
       </main>

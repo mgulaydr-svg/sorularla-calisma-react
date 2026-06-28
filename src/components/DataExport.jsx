@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { KEYS, writeJson } from '../utils/storage.js';
 
-function DataExport({ questions, setQuestions }) {
+function DataExport({ questions, onSyncPool, onDeleteQuestion }) {
   const [importText, setImportText] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
   const [bulkLargeDeck, setBulkLargeDeck] = useState('');
@@ -9,133 +8,76 @@ function DataExport({ questions, setQuestions }) {
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
 
-  // TÜM Ana Desteler
   const uniqueLargeDecks = [...new Set(questions.map(q => q.largeDeck).filter(Boolean))].sort();
-  
-  // AKILLI FİLTRE 1: Toplu Düzenleme için (bulkLargeDeck'e bağlı)
-  const bulkFilteredSmallDecks = [...new Set(questions
-    .filter(q => !bulkLargeDeck || q.largeDeck === bulkLargeDeck)
-    .map(q => q.smallDeck).filter(Boolean))].sort();
-
-  // AKILLI FİLTRE 2: Tablo İçi Düzenleme için (editFormData.largeDeck'e bağlı)
-  const inlineFilteredSmallDecks = [...new Set(questions
-    .filter(q => !editFormData.largeDeck || q.largeDeck === editFormData.largeDeck)
-    .map(q => q.smallDeck).filter(Boolean))].sort();
+  const bulkFilteredSmallDecks = [...new Set(questions.filter(q => !bulkLargeDeck || q.largeDeck === bulkLargeDeck).map(q => q.smallDeck).filter(Boolean))].sort();
+  const inlineFilteredSmallDecks = [...new Set(questions.filter(q => !editFormData.largeDeck || q.largeDeck === editFormData.largeDeck).map(q => q.smallDeck).filter(Boolean))].sort();
 
   const handleImport = () => {
     try {
       const parsed = JSON.parse(importText);
       const newQuestions = Array.isArray(parsed) ? parsed : [parsed];
-      const updatedPool = [...questions, ...newQuestions];
-      setQuestions(updatedPool);
-      writeJson(KEYS.bank, updatedPool);
+      onSyncPool([...questions, ...newQuestions]); // BULUTA GÖNDER
       setImportText('');
-      alert(`${newQuestions.length} soru başarıyla havuza eklendi!`);
-    } catch (e) {
-      alert("Hata! Geçerli bir JSON formatı girmediniz.");
-    }
+    } catch (e) { alert("Geçerli bir JSON formatı girmediniz."); }
   };
 
-  const toggleSelectAll = () => {
-    if (selectedIds.length === questions.length) setSelectedIds([]);
-    else setSelectedIds(questions.map(q => q.id));
-  };
-
-  const toggleSelect = (id) => {
-    if (selectedIds.includes(id)) setSelectedIds(selectedIds.filter(itemId => itemId !== id));
-    else setSelectedIds([...selectedIds, id]);
-  };
+  const toggleSelectAll = () => setSelectedIds(selectedIds.length === questions.length ? [] : questions.map(q => q.id));
+  const toggleSelect = (id) => setSelectedIds(selectedIds.includes(id) ? selectedIds.filter(itemId => itemId !== id) : [...selectedIds, id]);
 
   const applyBulkEdit = () => {
-    if (selectedIds.length === 0) return alert('Lütfen değiştirmek istediğiniz soruları seçin.');
-    if (!bulkLargeDeck && !bulkSmallDeck) return alert('Lütfen yeni bir Ana Deste veya Alt Deste adı girin.');
-    if (window.confirm(`${selectedIds.length} sorunun destesini değiştirmek istediğinize emin misiniz?`)) {
-      const updatedPool = questions.map(q => {
-        if (selectedIds.includes(q.id)) {
-          return { ...q, largeDeck: bulkLargeDeck || q.largeDeck, smallDeck: bulkSmallDeck || q.smallDeck };
-        }
-        return q;
-      });
-      setQuestions(updatedPool);
-      writeJson(KEYS.bank, updatedPool);
-      setSelectedIds([]);
-      setBulkLargeDeck('');
-      setBulkSmallDeck('');
-      alert('Toplu deste değiştirme işlemi başarıyla tamamlandı!');
+    if (selectedIds.length === 0 || (!bulkLargeDeck && !bulkSmallDeck)) return alert('Eksik bilgi girdiniz.');
+    if (window.confirm(`${selectedIds.length} sorunun destesini bulutta güncelliyorum. Onaylıyor musun?`)) {
+      const updatedPool = questions.map(q => selectedIds.includes(q.id) ? { ...q, largeDeck: bulkLargeDeck || q.largeDeck, smallDeck: bulkSmallDeck || q.smallDeck } : q);
+      onSyncPool(updatedPool); // BULUTA GÖNDER
+      setSelectedIds([]); setBulkLargeDeck(''); setBulkSmallDeck('');
     }
   };
 
-  const startEditing = (question) => {
-    setEditingId(question.id);
-    setEditFormData({ ...question });
-  };
+  const startEditing = (question) => { setEditingId(question.id); setEditFormData({ ...question }); };
 
   const saveInlineEdit = () => {
     const updatedPool = questions.map(q => q.id === editingId ? editFormData : q);
-    setQuestions(updatedPool);
-    writeJson(KEYS.bank, updatedPool);
+    onSyncPool(updatedPool); // BULUTA GÖNDER
     setEditingId(null);
   };
 
   const deleteQuestion = (id) => {
-    if(window.confirm('Bu soruyu silmek istediğinize emin misiniz?')) {
-       const updatedPool = questions.filter(q => q.id !== id);
-       setQuestions(updatedPool);
-       writeJson(KEYS.bank, updatedPool);
+    if(window.confirm('Bu soruyu veritabanından kalıcı olarak silmek istediğine emin misin?')) {
+       onDeleteQuestion(id); // BULUTTAN SİL
     }
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-      
-      {/* DATALIST TANIMLAMALARI (Görünmez) */}
       <datalist id="bulk-large-decks">{uniqueLargeDecks.map(d => <option key={d} value={d} />)}</datalist>
       <datalist id="bulk-small-decks">{bulkFilteredSmallDecks.map(d => <option key={d} value={d} />)}</datalist>
       <datalist id="inline-large-decks">{uniqueLargeDecks.map(d => <option key={d} value={d} />)}</datalist>
       <datalist id="inline-small-decks">{inlineFilteredSmallDecks.map(d => <option key={d} value={d} />)}</datalist>
 
-      {/* ÜST PANEL: İÇE AKTARMA */}
-      <div style={{ padding: '25px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-        <h3 style={{ marginTop: 0, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '10px' }}><span>📥</span> AI ile JSON İçe Aktar</h3>
-        <p style={{ fontSize: '13px', color: '#64748b' }}>Yapay zekadan aldığınız JSON çıktısını buraya yapıştırın.</p>
-        <textarea 
-          value={importText} onChange={(e) => setImportText(e.target.value)} 
-          placeholder="[ { 'largeDeck': '...', 'question': '...' } ]"
-          style={{ width: '100%', height: '120px', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', marginBottom: '15px', fontFamily: 'monospace' }}
-        />
-        <button onClick={handleImport} style={{ padding: '12px 20px', backgroundColor: '#8b5cf6', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '600', cursor: 'pointer' }}>Havuza Ekle</button>
+      <div style={{ padding: '25px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+        <h3 style={{ marginTop: 0 }}>📥 AI ile JSON İçe Aktar</h3>
+        <textarea value={importText} onChange={(e) => setImportText(e.target.value)} style={{ width: '100%', height: '100px', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', marginBottom: '15px' }} />
+        <button onClick={handleImport} style={{ padding: '12px 20px', backgroundColor: '#8b5cf6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Havuza Ekle</button>
       </div>
 
-      {/* ORTA PANEL: TOPLU DESTE DÜZENLEME */}
       {selectedIds.length > 0 && (
-        <div style={{ padding: '20px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
-          <strong style={{ color: '#166534' }}>{selectedIds.length} Soru Seçildi</strong>
-          <input 
-            list="bulk-large-decks"
-            type="text" placeholder="Yeni Ana Deste Adı..." 
-            value={bulkLargeDeck} onChange={(e) => setBulkLargeDeck(e.target.value)} 
-            style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', flex: 1, minWidth: '150px' }}
-          />
-          <input 
-            list="bulk-small-decks"
-            type="text" placeholder="Yeni Alt Deste Adı..." 
-            value={bulkSmallDeck} onChange={(e) => setBulkSmallDeck(e.target.value)} 
-            style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', flex: 1, minWidth: '150px' }}
-          />
-          <button onClick={applyBulkEdit} style={{ padding: '8px 16px', backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '600', cursor: 'pointer' }}>Toplu Taşı / Düzenle</button>
+        <div style={{ padding: '20px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', display: 'flex', gap: '15px' }}>
+          <strong>{selectedIds.length} Seçildi</strong>
+          <input list="bulk-large-decks" placeholder="Yeni Ana Deste..." value={bulkLargeDeck} onChange={(e) => setBulkLargeDeck(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', flex: 1 }} />
+          <input list="bulk-small-decks" placeholder="Yeni Alt Deste..." value={bulkSmallDeck} onChange={(e) => setBulkSmallDeck(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', flex: 1 }} />
+          <button onClick={applyBulkEdit} style={{ padding: '8px 16px', backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Toplu Taşı</button>
         </div>
       )}
 
-      {/* ALT PANEL: TÜM SORULAR LİSTESİ VE TABLO */}
       <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
-        <div style={{ padding: '15px 20px', backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ margin: 0, fontSize: '16px', color: '#1e293b' }}>Soru Havuzu ({questions.length} Soru)</h3>
+        <div style={{ padding: '15px 20px', backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+          <h3 style={{ margin: 0, fontSize: '16px' }}>Soru Havuzu ({questions.length} Soru)</h3>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
             <thead>
-              <tr style={{ backgroundColor: '#f1f5f9', color: '#475569', borderBottom: '2px solid #e2e8f0' }}>
-                <th style={{ padding: '12px 15px', width: '40px' }}><input type="checkbox" checked={selectedIds.length === questions.length && questions.length > 0} onChange={toggleSelectAll} /></th>
+              <tr style={{ backgroundColor: '#f1f5f9', borderBottom: '2px solid #e2e8f0' }}>
+                <th style={{ padding: '12px 15px' }}><input type="checkbox" checked={selectedIds.length === questions.length && questions.length > 0} onChange={toggleSelectAll} /></th>
                 <th style={{ padding: '12px 15px' }}>Desteler</th>
                 <th style={{ padding: '12px 15px', width: '40%' }}>Soru Önizleme</th>
                 <th style={{ padding: '12px 15px', textAlign: 'center' }}>İşlemler</th>
