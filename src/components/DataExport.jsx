@@ -54,10 +54,43 @@ function DataExport({ questions, onSyncPool, onDeleteQuestion }) {
       <datalist id="inline-large-decks">{uniqueLargeDecks.map(d => <option key={d} value={d} />)}</datalist>
       <datalist id="inline-small-decks">{inlineFilteredSmallDecks.map(d => <option key={d} value={d} />)}</datalist>
 
+      {/* 🌟 GERİ GETİRİLEN AI PROMPT KILAVUZU */}
+      <div style={{ padding: '25px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderTop: '4px solid #8b5cf6', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
+        <h3 style={{ marginTop: 0, color: '#4c1d95' }}>🤖 Sihirli AI Soru Dönüştürücü Promptu</h3>
+        <p style={{ fontSize: '14px', color: '#4b5563', lineHeight: '1.5' }}>
+          Eğitim dökümanlarını, notlarını veya test sorularını sisteme tek seferde kusursuz yüklemek için aşağıdaki promptu kopyalayıp <strong>Gemini, ChatGPT veya Claude</strong>'a yapıştırabilirsin. Çıkan sonucu hemen altındaki içe aktarma alanına yüklemen yeterlidir.
+        </p>
+        <pre style={{ backgroundColor: '#f8fafc', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px', color: '#334155', whiteSpace: 'pre-wrap', fontFamily: 'monospace', lineHeight: '1.6' }}>
+{`Aşağıdaki eğitim notlarını/metni çoktan seçmeli soru kartlarına dönüştür. Lütfen çıktıyı SADECE kod blokları olmadan, ham ve geçerli bir JSON dizisi (array) formatında üret. Her soru objesi tam olarak şu yapıda olmalıdır:
+
+[
+  {
+    "id": "benzersiz_bir_string_veya_timestamp",
+    "largeDeck": "Ana Konu Başlığı (Örn: Flutter)",
+    "smallDeck": "Alt Konu Başlığı (Örn: Widgetlar)",
+    "question": "Soru metni... Kod kullanacaksan satır atlamaları için \\n kullan.",
+    "options": { 
+      "A": "A seçeneği metni", 
+      "B": "B seçeneği metni", 
+      "C": "C seçeneği metni", 
+      "D": "D seçeneği metni", 
+      "E": "E seçeneği metni" 
+    },
+    "correct": "A",
+    "explanation": "Doğru cevabın neden o şık olduğuna dair detaylı analiz..."
+  }
+]
+
+Metin Notları:
+[Ders Notunu Veya Ham Soruları Buraya Yapıştır]`}
+        </pre>
+      </div>
+
+      {/* JSON İÇE AKTARMA KUTUSU */}
       <div style={{ padding: '25px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px' }}>
-        <h3 style={{ marginTop: 0 }}>📥 AI ile JSON İçe Aktar</h3>
-        <textarea value={importText} onChange={(e) => setImportText(e.target.value)} style={{ width: '100%', height: '100px', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', marginBottom: '15px' }} />
-        <button onClick={handleImport} style={{ padding: '12px 20px', backgroundColor: '#8b5cf6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Havuza Ekle</button>
+        <h3 style={{ marginTop: 0 }}>📥 JSON İçe Aktar ve Buluta Gönder</h3>
+        <textarea value={importText} onChange={(e) => setImportText(e.target.value)} style={{ width: '100%', height: '100px', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', marginBottom: '15px' }} placeholder="JSON verisini buraya yapıştırın..." />
+        <button onClick={handleImport} style={{ padding: '12px 20px', backgroundColor: '#8b5cf6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Havuza Ekle</button>
       </div>
 
       {selectedIds.length > 0 && (
