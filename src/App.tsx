@@ -98,7 +98,12 @@ function App() {
   const availableSmallDecks = [...new Set(questions.filter(q => largeDeckFilter === 'all' || q.largeDeck === largeDeckFilter).map(q => q.smallDeck).filter(Boolean))].sort();
 
   return (
-    <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
+    <div style={{ 
+      backgroundColor: '#f8fafc', 
+      minHeight: '100vh',
+      fontFamily: 'system-ui, sans-serif',
+      textAlign: 'left' /* İŞTE METİNLERİ NİZAMİ ŞEKİLDE SOLA YASLAYACAK SİHİRLİ KOD */
+    }}>
       
       {/* HEADER */}
       <header style={{ 
@@ -116,9 +121,9 @@ function App() {
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)', overflow: 'hidden'
           }}>
             <img 
-              src="[https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/1200px-React-icon.svg.png](https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/1200px-React-icon.svg.png)" 
-              alt="Logo" 
-              style={{ width: '80%', height: '80%', objectFit: 'contain' }} 
+              src="/logo.png" /* Public klasöründeki dosyayı doğrudan ismiyle çeker */
+              alt="Platform Logosu" 
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
             />
           </div>
 
