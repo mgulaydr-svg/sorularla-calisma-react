@@ -201,7 +201,18 @@ function App() {
             </div>
 
             {filteredQuestions.length > 0 ? (
-              <QuestionCard question={currentQuestion} currentIndex={currentIndex} totalQuestions={filteredQuestions.length} selectedAnswer={currentSelectedAnswer} onAnswer={handleAnswer} onNext={handleNext} onPrev={handlePrev} isAdmin={isAdmin} onSaveQuestion={handleSaveQuestion} />
+              <QuestionCard 
+              question={currentQuestion} 
+              currentIndex={currentIndex} 
+              totalQuestions={filteredQuestions.length} 
+              selectedAnswer={currentSelectedAnswer} 
+              onAnswer={handleAnswer} 
+              onNext={handleNext} 
+              onPrev={handlePrev} 
+              isAdmin={isAdmin} 
+              onSaveQuestion={handleSaveQuestion} 
+              allQuestions={questions} /* YENİ EKLENEN KISIM BURASI */
+            />
             ) : (
               <div style={{ padding: '20px', backgroundColor: '#fef2f2', color: '#991b1b', borderRadius: '8px' }}>Seçilen kriterlere uygun soru bulunamadı.</div>
             )}
