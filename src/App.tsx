@@ -144,20 +144,17 @@ function App() {
         
         {/* LOGO VE BAŞLIK ALANI */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          
-          {/* Logo Görseli: src içindeki linki kendi logonun URL'si ile değiştirebilirsin */}
           <div style={{ 
             backgroundColor: '#fff', width: '45px', height: '45px', borderRadius: '10px', 
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)', overflow: 'hidden'
           }}>
             <img 
-              src="/logo.png" /* Public klasöründeki dosyayı doğrudan ismiyle çeker */
-              alt="Platform Logosu" 
+              src="/logo.png" 
+              alt="Logo" 
               style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
             />
           </div>
-
           <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: '#ffffff' }}>
             Sorularla Çalışma Platformu
           </h1>
@@ -166,12 +163,8 @@ function App() {
         <div style={{ display: 'flex', gap: '25px', fontSize: '14px', alignItems: 'center', color: '#e0f2fe' }}>
           <span>📅 {currentDate}</span>
           <span>👥 Canlı Ziyaretçi: 1</span>
-          <button 
-            onClick={() => { setIsAdmin(!isAdmin); alert(isAdmin ? 'Yönetici çıkışı yapıldı.' : 'Yönetici girişi simüle edildi! Düzenleme yetkileri açıldı.'); }}
-            style={{ padding: '8px 16px', backgroundColor: isAdmin ? '#b91c1c' : '#0369a1', border: '1px solid #38bdf8', borderRadius: '6px', color: '#fff', fontWeight: '600', cursor: 'pointer' }}
-          >
-            {isAdmin ? '🔒 Güvenli Çıkış' : '🔑 Yönetici Girişi'}
-          </button>
+          
+          {/* TEK VE GERÇEK YÖNETİCİ GİRİŞ BUTONU */}
           <button 
             onClick={handleAdminLogin}
             style={{ padding: '8px 16px', backgroundColor: isAdmin ? '#b91c1c' : '#0369a1', border: '1px solid #38bdf8', borderRadius: '6px', color: '#fff', fontWeight: '600', cursor: 'pointer' }}
