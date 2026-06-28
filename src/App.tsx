@@ -169,12 +169,11 @@ function App() {
 
       <nav style={{ 
         backgroundColor: '#fff', 
-        padding: '20px 40px', 
+        padding: '10px 40px', // Üst-alt boşluğu biraz kıstık, açıklama ekleyeceğimiz için
         borderBottom: '1px solid #e2e8f0', 
         display: 'flex', 
         gap: '15px', 
-        flexWrap: 'wrap', // Ekran daralırsa aşağı kayar, butonlar bozulmaz
-        alignItems: 'center'
+        alignItems: 'stretch' // Tüm butonların boyu eşit olsun
       }}>
         {navItems.map(item => {
           if (item.adminOnly && !isAdmin) return null;
@@ -185,20 +184,37 @@ function App() {
               key={item.id}
               onClick={() => setCurrentMode(item.id)}
               style={{
+                flex: 1, // İşte butonların ekranı doldurmasını sağlayan sihirli satır
                 textAlign: 'left', 
                 padding: '12px 20px',
                 backgroundColor: isActive ? '#f8fafc' : '#fff',
                 border: '1px solid #e2e8f0', 
-                borderTop: `4px solid ${item.color}`,
+                borderTop: `4px solid ${item.color}`, // Renkli üst çizgi
                 borderRadius: '8px', 
                 cursor: 'pointer', 
-                transition: 'all 0.2s ease',
+                transition: 'all 0.25s ease',
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                justifyContent: 'center'
               }}
             >
-              <span style={{ fontSize: '14px', fontWeight: '700', color: isActive ? item.color : '#334155' }}>
+              {/* Başlık: Kalın ve net */}
+              <span style={{ 
+                fontSize: '15px', 
+                fontWeight: '800', // Daha kalın vurgu
+                color: isActive ? item.color : '#1e293b', 
+                marginBottom: '4px' 
+              }}>
                 {item.title}
+              </span>
+              
+              {/* Açıklama: Daha küçük ve gri */}
+              <span style={{ 
+                fontSize: '12px', 
+                color: '#64748b', 
+                fontWeight: '500'
+              }}>
+                {item.desc}
               </span>
             </button>
           );
