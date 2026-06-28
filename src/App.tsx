@@ -133,25 +133,43 @@ function App() {
   return (
     <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
       
-      {/* 1. TEPE MENÜ (HEADER) */}
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 40px', backgroundColor: '#f1f5f9', borderBottom: '1px solid #e2e8f0' }}>
+      {/* 1. TEPE MENÜ (HEADER) - EĞİTİM PORTALI MAVİSİ */}
+      <header style={{ 
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+        padding: '20px 40px', 
+        backgroundColor: '#0284c7', /* Esti Biraz tarzı ana mavi ton */
+        color: '#ffffff',
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' 
+      }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '20px', color: '#0f172a', fontWeight: '700', letterSpacing: '-0.5px' }}>
+          <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '700', letterSpacing: '-0.5px', color: '#ffffff' }}>
             📚 Sorularla Çalışma
           </h1>
         </div>
-        <div style={{ display: 'flex', gap: '25px', fontSize: '14px', color: '#475569', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '25px', fontSize: '14px', alignItems: 'center', color: '#e0f2fe' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>📅 {currentDate}</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>👥 Ziyaretçi: 1.245</span>
           
-          <button style={{ padding: '8px 16px', backgroundColor: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', color: '#334155', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+          <button style={{ 
+            padding: '8px 16px', 
+            backgroundColor: '#0369a1', /* Daha koyu vurgulu mavi */
+            border: '1px solid #38bdf8', /* Açık mavi kenarlık */
+            borderRadius: '6px', 
+            color: '#ffffff', 
+            fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}>
             Yönetici Girişi
           </button>
         </div>
       </header>
 
       {/* 2. BEYAZ ALAN: AÇIKLAMALI VE RENKLİ NAVİGASYON */}
-      <nav style={{ backgroundColor: '#fff', padding: '20px 40px', display: 'flex', gap: '20px', borderBottom: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)', overflowX: 'auto' }}>
+      <nav style={{ 
+        backgroundColor: '#fff', padding: '20px 40px', display: 'flex', gap: '20px', 
+        borderBottom: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)',
+        flexWrap: 'wrap' /* Sınav butonunun kaybolmasını engelleyen kritik satır */
+      }}>
         {navItems.map(item => {
           if (item.adminOnly && !isAdmin) return null;
           const isActive = currentMode === item.id;
