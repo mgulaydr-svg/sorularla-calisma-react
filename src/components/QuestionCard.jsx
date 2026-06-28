@@ -8,9 +8,13 @@ function QuestionCard({
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({ ...question });
 
-  // Soru havuzundaki benzersiz desteleri çıkartıyoruz (Otomatik tamamlama için)
+  // TÜM Ana Desteler
   const uniqueLargeDecks = allQuestions ? [...new Set(allQuestions.map(q => q.largeDeck).filter(Boolean))].sort() : [];
-  const uniqueSmallDecks = allQuestions ? [...new Set(allQuestions.map(q => q.smallDeck).filter(Boolean))].sort() : [];
+  
+  // AKILLI FİLTRE: Sadece yazılan/seçilen Ana Deste'ye ait Alt Desteleri getirir
+  const uniqueSmallDecks = allQuestions ? [...new Set(allQuestions
+    .filter(q => !formData.largeDeck || q.largeDeck === formData.largeDeck)
+    .map(q => q.smallDeck).filter(Boolean))].sort() : [];
 
   useEffect(() => {
     setFormData({ ...question });
@@ -22,13 +26,11 @@ function QuestionCard({
     setIsEditing(false);
   };
 
-  // 1. DÜZENLEME MODU
   if (isEditing && isAdmin) {
     return (
       <div style={{ marginTop: '20px', padding: '30px', border: '1px solid #e2e8f0', borderTop: '4px solid #8b5cf6', borderRadius: '12px', backgroundColor: '#fff', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
         <h3 style={{ marginTop: 0, color: '#1e293b', marginBottom: '20px' }}>🔧 Soru Kartını Düzenle</h3>
         
-        {/* SİHİRLİ LİSTELER: Inputlara yazıldıkça seçenek sunacak arka plan listeleri */}
         <datalist id="large-decks-list">
           {uniqueLargeDecks.map(deck => <option key={deck} value={deck} />)}
         </datalist>
@@ -40,7 +42,7 @@ function QuestionCard({
           <div style={{ flex: 1 }}>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#475569', marginBottom: '5px' }}>Ana Deste</label>
             <input 
-              list="large-decks-list" /* Datalist bağlantısı */
+              list="large-decks-list" 
               type="text" value={formData.largeDeck || ''} onChange={(e) => setFormData({...formData, largeDeck: e.target.value})} 
               style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} 
               placeholder="Yeni yaz veya listeden seç..."
@@ -49,7 +51,7 @@ function QuestionCard({
           <div style={{ flex: 1 }}>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#475569', marginBottom: '5px' }}>Alt Deste</label>
             <input 
-              list="small-decks-list" /* Datalist bağlantısı */
+              list="small-decks-list" 
               type="text" value={formData.smallDeck || ''} onChange={(e) => setFormData({...formData, smallDeck: e.target.value})} 
               style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} 
               placeholder="Yeni yaz veya listeden seç..."
@@ -90,7 +92,6 @@ function QuestionCard({
     );
   }
 
-  // 2. NORMAL GÖRÜNÜM (Aynı kaldı)
   return (
     <div>
       <div style={{ marginTop: '20px', padding: '30px', border: '1px solid #e2e8f0', borderTop: '4px solid #0ea5e9', borderRadius: '12px', backgroundColor: '#fff', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
