@@ -83,16 +83,17 @@ function RichText({ text }) {
         <pre 
           key={`code-${elements.length}`} 
           style={{
-            backgroundColor: '#1e1e2e',
-            color: '#a6e3a1',
-            padding: '14px',
-            borderRadius: '8px',
-            fontFamily: 'monospace',
+            backgroundColor: '#f8fafc', // Esti Biraz tarzı çok açık gri/mavi arka plan
+            color: '#334155', // Koyu gri metin rengi
+            padding: '16px',
+            borderRadius: '12px', // Daha yuvarlak köşeler
+            fontFamily: "'Fira Code', 'Courier New', monospace",
             fontSize: '14px',
             overflowX: 'auto',
-            margin: '12px 0',
-            lineHeight: '1.5',
-            border: '1px solid #313244'
+            margin: '15px 0',
+            lineHeight: '1.6',
+            border: '1px solid #e2e8f0', // Yumuşak bir sınır çizgisi
+            boxShadow: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.02)' // Hafif iç gölge
           }}
         >
           <code>{currentCodeBlock.join('\n')}</code>

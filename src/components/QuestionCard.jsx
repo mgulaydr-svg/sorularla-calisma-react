@@ -11,7 +11,15 @@ function QuestionCard({
   onPrev 
 }) {
   return (
-    <div style={{ marginTop: '20px', padding: '20px', border: '1px solid #ccc', borderRadius: '12px', backgroundColor: '#f9f9f9', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+    <div style={{ 
+      marginTop: '20px', 
+      padding: '30px', 
+      border: '1px solid #e2e8f0', 
+      borderTop: '4px solid #0ea5e9', // Kartlar için renkli üst çizgi
+      borderRadius: '12px', 
+      backgroundColor: '#fff', 
+      boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' 
+    }}>
       {/* Kart Üst Bilgisi */}
       <div style={{ display: 'flex', justifyContent: 'space-between', color: '#666', fontSize: '14px', marginBottom: '15px' }}>
         <span>Soru: <strong>{currentIndex + 1} / {totalQuestions}</strong></span>
