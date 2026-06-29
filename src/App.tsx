@@ -26,18 +26,17 @@ function App() {
       try {
         const snapshot = await getDocs(collection(db, 'questions'));
         if (!snapshot.empty) {
-          // 🚀 KRİTİK DÜZELTME: Veritabanının gerçek döküman ID'sini zorla atıyoruz
           const cloudData = snapshot.docs.map(d => ({
             ...d.data(),
             id: d.id 
           }));
           setQuestions(cloudData);
         } else {
-          setQuestions(QUESTIONS); // Bulut boşsa varsayılanı yükle
+          setQuestions([]); // 🚀 KRİTİK DEĞİŞİKLIK: Bulut boşsa yerel soruları DEĞİL, boş havuz yükle!
         }
       } catch (error) {
-        console.error("Bulut bağlantı hatası, yerel veriler yükleniyor:", error);
-        setQuestions(readJson(KEYS.bank, QUESTIONS));
+        console.error("Bulut bağlantı hatası:", error);
+        setQuestions([]); 
       }
     };
     
