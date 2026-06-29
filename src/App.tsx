@@ -262,13 +262,62 @@ function App() {
       </section>
 
       {/* FOOTER */}
-      <footer style={{ padding: '40px', backgroundColor: '#0f172a', color: '#94a3b8', textAlign: 'center' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', marginBottom: '20px' }}>
-          {['X', 'Threads', 'Instagram', 'YouTube'].map(social => (
-            <a key={social} href="#" style={{ color: '#fff', textDecoration: 'none', fontWeight: '500' }}>{social}</a>
-          ))}
+      <footer style={{ 
+        padding: '50px 40px 30px 40px', 
+        backgroundColor: '#0284c7', // Header ile aynı renk
+        color: '#ffffff', 
+        textAlign: 'center', 
+        borderTop: '4px solid #0369a1' 
+      }}>
+        
+        {/* SLOGAN */}
+        <h3 style={{ 
+          margin: '0 0 30px 0', 
+          fontSize: '22px', 
+          fontWeight: '500', 
+          fontStyle: 'italic', 
+          color: '#e0f2fe', 
+          letterSpacing: '0.5px' 
+        }}>
+          "Bilgiyi tasarlıyor, eğitimi dijitalle buluşturuyoruz."
+        </h3>
+
+        {/* SOSYAL MEDYA İKONLARI */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', marginBottom: '30px' }}>
+          
+          {/* X (Twitter) */}
+          <a href="#" style={{ color: '#fff', transition: 'transform 0.2s', display: 'inline-block' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.2)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'} title="X (Twitter)">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+
+          {/* Threads (@ İkonu ile temsil) */}
+          <a href="#" style={{ color: '#fff', transition: 'transform 0.2s', display: 'inline-block' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.2)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'} title="Threads">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"></path></svg>
+          </a>
+
+          {/* Instagram */}
+          <a href="#" style={{ color: '#fff', transition: 'transform 0.2s', display: 'inline-block' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.2)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'} title="Instagram">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+          </a>
+
+          {/* YouTube */}
+          <a href="#" style={{ color: '#fff', transition: 'transform 0.2s', display: 'inline-block' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.2)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'} title="YouTube">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
+          </a>
+
+          {/* WhatsApp */}
+          <a href="#" style={{ color: '#fff', transition: 'transform 0.2s', display: 'inline-block' }} onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.2)'} onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'} title="WhatsApp">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+          </a>
+
         </div>
-        <p style={{ fontSize: '14px' }}>© 2026 Esti Biraz Ekosistemi. Tüm hakları saklıdır.</p>
+
+        {/* COPYRIGHT */}
+        <div style={{ borderTop: '1px solid #38bdf8', paddingTop: '20px' }}>
+          <p style={{ fontSize: '14px', color: '#bae6fd', margin: 0 }}>
+            © {new Date().getFullYear()} Esti Biraz Ekosistemi. Tüm hakları saklıdır.
+          </p>
+        </div>
       </footer>
     </div>
   );
