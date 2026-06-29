@@ -85,28 +85,39 @@ function DataExport({ questions, onSyncPool, onDeleteQuestion, onBulkDelete }) {
         <p style={{ fontSize: '14px', color: '#4b5563', lineHeight: '1.5' }}>
           Eğitim dökümanlarını, notlarını veya test sorularını sisteme tek seferde kusursuz yüklemek için aşağıdaki promptu kopyalayıp <strong>Gemini, ChatGPT veya Claude</strong>'a yapıştırabilirsin. Çıkan sonucu hemen altındaki içe aktarma alanına yüklemen yeterlidir.
         </p>
-        <pre style={{ backgroundColor: '#f8fafc', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px', color: '#334155', whiteSpace: 'pre-wrap', fontFamily: 'monospace', lineHeight: '1.6' }}>
-{`Aşağıdaki eğitim notlarını/metni çoktan seçmeli soru kartlarına dönüştür. Lütfen çıktıyı SADECE kod blokları olmadan, ham ve geçerli bir JSON dizisi (array) formatında üret. Her soru objesi tam olarak şu yapıda olmalıdır:
+        <pre style={{ backgroundColor: '#f8fafc', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px', color: '#334155', whiteSpace: 'pre-wrap', fontFamily: 'monospace', lineHeight: '1.5', maxHeight: '300px', overflowY: 'auto' }}>
+{`MASTER PROMPT – Eğitim Notlarını Profesyonel JSON Soru Bankasına Dönüştürme
+Sen deneyimli bir eğitim tasarımcısı, ölçme-değerlendirme uzmanı ve yazılım geliştiricisisin.
+Görevin, sana verilen eğitim notlarını, ders slaytlarını, PDF'leri, kitap bölümlerini veya ham soru listelerini profesyonel bir çoktan seçmeli soru bankasına dönüştürmektir.
 
+Genel Kurallar
+• Sadece geçerli (valid) JSON üret.
+• Markdown kullanma. Kod bloğu oluşturma.
+• JSON dışında hiçbir açıklama yazma. Sonuç tek bir JSON Array olmalıdır.
+
+Çıktı Formatı
 [
   {
-    "id": "benzersiz_bir_string_veya_timestamp",
-    "largeDeck": "Ana Konu Başlığı (Örn: Flutter)",
-    "smallDeck": "Alt Konu Başlığı (Örn: Widgetlar)",
-    "question": "Soru metni... Kod kullanacaksan satır atlamaları için \\n kullan.",
-    "options": { 
-      "A": "A seçeneği metni", 
-      "B": "B seçeneği metni", 
-      "C": "C seçeneği metni", 
-      "D": "D seçeneği metni", 
-      "E": "E seçeneği metni" 
-    },
+    "id": "benzersiz_uuid",
+    "largeDeck": "Ana Konu",
+    "smallDeck": "Alt Konu",
+    "difficulty": "Kolay/Orta/Zor",
+    "bloom": "Hatırlama/Anlama/Uygulama/Analiz/Değerlendirme/Oluşturma",
+    "tags": ["etiket1", "etiket2", "etiket3"],
+    "question": "Soru metni... (Kod varsa \\n kullan)",
+    "options": { "A": "", "B": "", "C": "", "D": "", "E": "" },
     "correct": "A",
-    "explanation": "Doğru cevabın neden o şık olduğuna dair detaylı analiz..."
+    "explanation": "Neden doğru, neden yanlış analizi..."
   }
 ]
 
-Metin Notları:
+Kurallar:
+- difficulty Dağılımı: %35 Kolay, %45 Orta, %20 Zor
+- bloom: Sadece listedekilerden uygun olanı seç.
+- tags: Her soruya 3-8 adet ilgili etiket ekle.
+- Soru Kuralları: 5 seçenek, 1 doğru cevap, mantıklı çeldiriciler.
+- Explanation: En az 80, en fazla 250 kelime. Neden doğru ve diğerleri neden yanlış açıklanmalı.
+
 [Ders Notunu Veya Ham Soruları Buraya Yapıştır]`}
         </pre>
       </div>
