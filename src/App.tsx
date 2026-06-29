@@ -101,27 +101,38 @@ function App() {
     }
   };
 
-  // 5. FIREBASE: SORU SİLME (DataExport'tan gelir)
+  // 5. FIREBASE: SORU SİLME (Güvenli Sıralama)
   const handleDeleteQuestion = async (id) => {
-    const updatedPool = questions.filter(q => q.id !== id);
-    setQuestions(updatedPool);
-    if (isAdmin) {
-      try { await deleteDoc(doc(db, 'questions', id.toString())); } 
-      catch (error) { console.error("Buluttan silinemedi", error); }
+    if (!isAdmin) return alert('Bu işlem için yönetici girişi yapmalısınız.');
+    try {
+      // Önce buluttan silmeyi dene
+      await deleteDoc(doc(db, 'questions', id.toString()));
+      
+      // Buluttan silme başarılıysa şimdi ekrandan kaldır
+      setQuestions(prev => prev.filter(q => q.id !== id));
+      alert('Soru veritabanından kalıcı olarak silindi.');
+    } catch (error) {
+      console.error("Buluttan silinemedi:", error);
+      alert("Silme işlemi başarısız oldu! Lütfen Firestore kurallarını veya internet bağlantını kontrol et. Hata: " + error.message);
     }
   };
 
-  // 6. FIREBASE: TOPLU SİLME
+  // 6. FIREBASE: TOPLU SİLME (Güvenli Sıralama)
   const handleBulkDelete = async (idsToDelete) => {
-    const updatedPool = questions.filter(q => !idsToDelete.includes(q.id));
-    setQuestions(updatedPool);
-    if (isAdmin) {
-      try {
-        const batch = writeBatch(db);
-        idsToDelete.forEach(id => batch.delete(doc(db, 'questions', id.toString())));
-        await batch.commit();
-        alert(`${idsToDelete.length} soru buluttan başarıyla silindi.`);
-      } catch (error) { console.error("Buluttan toplu silinemedi", error); }
+    if (!isAdmin) return alert('Bu işlem için yönetici girişi yapmalısınız.');
+    try {
+      const batch = writeBatch(db);
+      idsToDelete.forEach(id => batch.delete(doc(db, 'questions', id.toString())));
+      
+      // Önce buluttaki toplu işlemi tamamla
+      await batch.commit();
+      
+      // Başarılıysa şimdi ekrandan topluca kaldır
+      setQuestions(prev => prev.filter(q => !idsToDelete.includes(q.id)));
+      alert(`${idsToDelete.length} soru buluttan başarıyla silindi.`);
+    } catch (error) {
+      console.error("Buluttan toplu silinemedi:", error);
+      alert("Toplu silme işlemi veritabanı tarafından reddedildi! Hata: " + error.message);
     }
   };
 
