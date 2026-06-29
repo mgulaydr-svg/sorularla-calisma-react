@@ -26,7 +26,11 @@ function App() {
       try {
         const snapshot = await getDocs(collection(db, 'questions'));
         if (!snapshot.empty) {
-          const cloudData = snapshot.docs.map(d => d.data());
+          // 🚀 KRİTİK DÜZELTME: Veritabanının gerçek döküman ID'sini zorla atıyoruz
+          const cloudData = snapshot.docs.map(d => ({
+            ...d.data(),
+            id: d.id 
+          }));
           setQuestions(cloudData);
         } else {
           setQuestions(QUESTIONS); // Bulut boşsa varsayılanı yükle
@@ -36,6 +40,10 @@ function App() {
         setQuestions(readJson(KEYS.bank, QUESTIONS));
       }
     };
+    
+    fetchQuestions();
+    setProgress(readJson(KEYS.progress, {}));
+  }, []);
     
     fetchQuestions();
     setProgress(readJson(KEYS.progress, {}));
