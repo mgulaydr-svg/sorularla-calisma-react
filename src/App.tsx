@@ -44,10 +44,6 @@ function App() {
     fetchQuestions();
     setProgress(readJson(KEYS.progress, {}));
   }, []);
-    
-    fetchQuestions();
-    setProgress(readJson(KEYS.progress, {}));
-  }, []);
 
   // 2. FIREBASE: YÖNETİCİ KONTROLÜ
   useEffect(() => {
