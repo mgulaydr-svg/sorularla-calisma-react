@@ -158,8 +158,8 @@ function App() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <div style={{ 
             backgroundColor: '#fff', 
-            width: '60px',  /* Logoyu büyüttük */
-            height: '60px', /* Logoyu büyüttük */
+            width: '60px',  
+            height: '60px', 
             borderRadius: '12px', 
             display: 'flex', 
             alignItems: 'center', 
@@ -169,14 +169,21 @@ function App() {
             padding: '4px'
           }}>
             <img 
-              src="/logo.jpg" /* Uzantıyı .jpg yaptık */
+              src="/logo.jpg" 
               alt="Logo" 
               style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
             />
           </div>
-          <h1 style={{ margin: 0, fontSize: '26px', fontWeight: '700', color: '#ffffff' }}>
-            Sorularla Çalışma Platformu
-          </h1>
+          
+          {/* YENİ MARKALAŞMA: BAŞLIK VE ALT BAŞLIK */}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <h1 style={{ margin: 0, fontSize: '28px', fontWeight: '800', color: '#ffffff', letterSpacing: '0.5px' }}>
+              Esti Biraz
+            </h1>
+            <span style={{ fontSize: '14px', color: '#bae6fd', fontWeight: '600', letterSpacing: '1.5px', textTransform: 'uppercase', marginTop: '2px' }}>
+              Sorularla Çalış
+            </span>
+          </div>
         </div>
 
         <div style={{ display: 'flex', gap: '25px', fontSize: '14px', alignItems: 'center', color: '#e0f2fe' }}>
