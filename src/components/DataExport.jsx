@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function DataExport({ questions, onSyncPool, onDeleteQuestion }) {
+function DataExport({ questions, onSyncPool, onDeleteQuestion, onBulkDelete }) {
   const [importText, setImportText] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
   const [bulkLargeDeck, setBulkLargeDeck] = useState('');
@@ -21,6 +21,22 @@ function DataExport({ questions, onSyncPool, onDeleteQuestion }) {
     } catch (e) { alert("Geçerli bir JSON formatı girmediniz."); }
   };
 
+  // JSON DIŞA AKTARMA FONKSİYONU
+  const exportToJson = () => {
+    if (questions.length === 0) return alert("Dışa aktarılacak soru bulunamadı.");
+    const dataStr = JSON.stringify(questions, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const date = new Date().toISOString().split('T')[0];
+    link.download = `esti-biraz-soru-havuzu-${date}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const toggleSelectAll = () => setSelectedIds(selectedIds.length === questions.length ? [] : questions.map(q => q.id));
   const toggleSelect = (id) => setSelectedIds(selectedIds.includes(id) ? selectedIds.filter(itemId => itemId !== id) : [...selectedIds, id]);
 
@@ -30,6 +46,15 @@ function DataExport({ questions, onSyncPool, onDeleteQuestion }) {
       const updatedPool = questions.map(q => selectedIds.includes(q.id) ? { ...q, largeDeck: bulkLargeDeck || q.largeDeck, smallDeck: bulkSmallDeck || q.smallDeck } : q);
       onSyncPool(updatedPool); // BULUTA GÖNDER
       setSelectedIds([]); setBulkLargeDeck(''); setBulkSmallDeck('');
+    }
+  };
+
+  // TOPLU SİLME FONKSİYONU
+  const applyBulkDelete = () => {
+    if (selectedIds.length === 0) return;
+    if (window.confirm(`DİKKAT! Seçilen ${selectedIds.length} soruyu veritabanından kalıcı olarak silmek istediğine emin misin? Bu işlem geri alınamaz.`)) {
+      onBulkDelete(selectedIds);
+      setSelectedIds([]);
     }
   };
 
@@ -54,7 +79,7 @@ function DataExport({ questions, onSyncPool, onDeleteQuestion }) {
       <datalist id="inline-large-decks">{uniqueLargeDecks.map(d => <option key={d} value={d} />)}</datalist>
       <datalist id="inline-small-decks">{inlineFilteredSmallDecks.map(d => <option key={d} value={d} />)}</datalist>
 
-      {/* 🌟 GERİ GETİRİLEN AI PROMPT KILAVUZU */}
+      {/* AI PROMPT KILAVUZU */}
       <div style={{ padding: '25px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderTop: '4px solid #8b5cf6', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
         <h3 style={{ marginTop: 0, color: '#4c1d95' }}>🤖 Sihirli AI Soru Dönüştürücü Promptu</h3>
         <p style={{ fontSize: '14px', color: '#4b5563', lineHeight: '1.5' }}>
@@ -93,18 +118,28 @@ Metin Notları:
         <button onClick={handleImport} style={{ padding: '12px 20px', backgroundColor: '#8b5cf6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Havuza Ekle</button>
       </div>
 
+      {/* SEÇİLİ ÖĞELER PANELİ (TOPLU TAŞI VE TOPLU SİL) */}
       {selectedIds.length > 0 && (
-        <div style={{ padding: '20px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', display: 'flex', gap: '15px' }}>
-          <strong>{selectedIds.length} Seçildi</strong>
-          <input list="bulk-large-decks" placeholder="Yeni Ana Deste..." value={bulkLargeDeck} onChange={(e) => setBulkLargeDeck(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', flex: 1 }} />
-          <input list="bulk-small-decks" placeholder="Yeni Alt Deste..." value={bulkSmallDeck} onChange={(e) => setBulkSmallDeck(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', flex: 1 }} />
-          <button onClick={applyBulkEdit} style={{ padding: '8px 16px', backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Toplu Taşı</button>
+        <div style={{ padding: '20px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <strong style={{ color: '#166534' }}>{selectedIds.length} Soru Seçildi</strong>
+          <input list="bulk-large-decks" placeholder="Yeni Ana Deste..." value={bulkLargeDeck} onChange={(e) => setBulkLargeDeck(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', flex: 1, minWidth: '130px' }} />
+          <input list="bulk-small-decks" placeholder="Yeni Alt Deste..." value={bulkSmallDeck} onChange={(e) => setBulkSmallDeck(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', flex: 1, minWidth: '130px' }} />
+          <button onClick={applyBulkEdit} style={{ padding: '8px 16px', backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Toplu Taşı</button>
+          
+          {/* YENİ EKLENEN TOPLU SİLME BUTONU */}
+          <button onClick={applyBulkDelete} style={{ padding: '8px 16px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', marginLeft: 'auto' }}>🗑 Seçilenleri Sil</button>
         </div>
       )}
 
+      {/* LİSTE VE DIŞA AKTARMA BAŞLIĞI */}
       <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
-        <div style={{ padding: '15px 20px', backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+        <div style={{ padding: '15px 20px', backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ margin: 0, fontSize: '16px' }}>Soru Havuzu ({questions.length} Soru)</h3>
+          
+          {/* YENİ EKLENEN JSON DIŞA AKTAR BUTONU */}
+          <button onClick={exportToJson} style={{ padding: '8px 16px', backgroundColor: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>📤</span> Yedekle (JSON)
+          </button>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>

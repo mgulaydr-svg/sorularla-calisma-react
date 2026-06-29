@@ -97,6 +97,20 @@ function App() {
     }
   };
 
+  // 6. FIREBASE: TOPLU SİLME
+  const handleBulkDelete = async (idsToDelete) => {
+    const updatedPool = questions.filter(q => !idsToDelete.includes(q.id));
+    setQuestions(updatedPool);
+    if (isAdmin) {
+      try {
+        const batch = writeBatch(db);
+        idsToDelete.forEach(id => batch.delete(doc(db, 'questions', id.toString())));
+        await batch.commit();
+        alert(`${idsToDelete.length} soru buluttan başarıyla silindi.`);
+      } catch (error) { console.error("Buluttan toplu silinemedi", error); }
+    }
+  };
+
   const filteredQuestions = questions.filter(q => {
     if (largeDeckFilter !== 'all' && q.largeDeck !== largeDeckFilter) return false;
     if (smallDeckFilter !== 'all' && q.smallDeck !== smallDeckFilter) return false;
@@ -241,7 +255,7 @@ function App() {
         {/* DATA EXPORT: Bulut senkronizasyon fonksiyonları prop olarak gönderiliyor */}
         {currentMode === 'data' && isAdmin && (
           <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <DataExport questions={questions} onSyncPool={handleSyncPool} onDeleteQuestion={handleDeleteQuestion} />
+            <DataExport questions={questions} onSyncPool={handleSyncPool} onDeleteQuestion={handleDeleteQuestion} onBulkDelete={handleBulkDelete} />
           </div>
         )}
       </main>
