@@ -18,7 +18,8 @@ function App() {
   const [largeDeckFilter, setLargeDeckFilter] = useState('all');
   const [smallDeckFilter, setSmallDeckFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isAdmin, setIsAdmin] = useState(false); 
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); 
 
   // 1. FIREBASE: UYGULAMA AÇILDIĞINDA SORULARI BULUTTAN ÇEK
   useEffect(() => {
@@ -32,11 +33,13 @@ function App() {
           }));
           setQuestions(cloudData);
         } else {
-          setQuestions([]); // 🚀 KRİTİK DEĞİŞİKLIK: Bulut boşsa yerel soruları DEĞİL, boş havuz yükle!
+          setQuestions([]); // Bulut boşsa boş havuz
         }
       } catch (error) {
         console.error("Bulut bağlantı hatası:", error);
         setQuestions([]); 
+      } finally {
+        setIsLoading(false); // Yükleme işlemi her halükarda bitti
       }
     };
     
@@ -170,7 +173,7 @@ function App() {
   const handleNext = () => { if (currentIndex < filteredQuestions.length - 1) setCurrentIndex(prev => prev + 1); };
   const handlePrev = () => { if (currentIndex > 0) setCurrentIndex(prev => prev - 1); };
 
-  if (questions.length === 0) return <div style={{ padding: '20px' }}>Yükleniyor...</div>;
+  if (isLoading) return <div style={{ padding: '40px', textAlign: 'center', fontSize: '18px', color: '#0284c7', fontWeight: 'bold' }}>Bulut veritabanına bağlanılıyor...</div>;
 
   const currentQuestion = filteredQuestions[currentIndex];
   const currentSelectedAnswer = currentQuestion ? (sessionAnswers[currentQuestion.id] || null) : null;
