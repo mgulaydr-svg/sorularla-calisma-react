@@ -238,6 +238,38 @@ function App() {
           </div>
         )}
       </main>
+
+      {/* EKOSİSTEM KARTLARI */}
+      <section style={{ padding: '60px 40px', backgroundColor: '#ffffff' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '40px', color: '#1e293b' }}>Esti Biraz Ekosistemi</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '25px', maxWidth: '1000px', margin: '0 auto' }}>
+          
+          {[
+            { title: 'Eğitim Portalı', link: 'https://egitim-portali-drsk.vercel.app/', img: '/egitim-portali.jpg' },
+            { title: 'Esti Biraz', link: 'https://mgulaydr-svg.github.io/esti-biraz/', img: '/logo.png' },
+            { title: 'Akıllı Kartlar', link: 'https://mgulaydr-svg.github.io/akilli-kartlar/', img: '/akilli-kartlar.png' }
+          ].map((item, index) => (
+            <a key={index} href={item.link} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <div style={{ padding: '20px', border: '1px solid #e2e8f0', borderRadius: '12px', textAlign: 'center', transition: 'transform 0.2s', cursor: 'pointer' }} 
+                   onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'} 
+                   onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                <img src={item.img} alt={item.title} style={{ width: '120px', height: '120px', objectFit: 'contain', marginBottom: '15px' }} />
+                <h3 style={{ margin: 0, fontSize: '18px', color: '#0284c7' }}>{item.title}</h3>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer style={{ padding: '40px', backgroundColor: '#0f172a', color: '#94a3b8', textAlign: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', marginBottom: '20px' }}>
+          {['X', 'Threads', 'Instagram', 'YouTube'].map(social => (
+            <a key={social} href="#" style={{ color: '#fff', textDecoration: 'none', fontWeight: '500' }}>{social}</a>
+          ))}
+        </div>
+        <p style={{ fontSize: '14px' }}>© 2026 Esti Biraz Ekosistemi. Tüm hakları saklıdır.</p>
+      </footer>
     </div>
   );
 }
