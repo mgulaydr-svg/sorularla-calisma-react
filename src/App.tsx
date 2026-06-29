@@ -79,11 +79,25 @@ function App() {
     setQuestions(newPool);
     if (isAdmin) {
       try {
-        const batch = writeBatch(db);
-        newPool.forEach(q => batch.set(doc(db, 'questions', q.id.toString()), q));
-        await batch.commit();
+        // Firestore'un 500'lük toplu işlem (batch) limitini aşmamak için 
+        // verileri 400'erli güvenli parçalara bölerek sırayla buluta yüklüyoruz.
+        const CHUNK_SIZE = 400;
+        for (let i = 0; i < newPool.length; i += CHUNK_SIZE) {
+          const chunk = newPool.slice(i, i + CHUNK_SIZE);
+          const batch = writeBatch(db);
+          
+          chunk.forEach(q => {
+            if (q && q.id) {
+              batch.set(doc(db, 'questions', q.id.toString()), q);
+            }
+          });
+          
+          await batch.commit(); // Her parçayı sırayla buluta kilitler
+        }
         alert("Tüm değişiklikler başarıyla buluta eşitlendi!");
-      } catch (error) { alert("Bulut eşitleme hatası: " + error.message); }
+      } catch (error) { 
+        alert("Bulut eşitleme hatası: " + error.message); 
+      }
     }
   };
 
