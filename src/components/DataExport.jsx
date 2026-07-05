@@ -38,7 +38,7 @@ function DataExport({ questions, onSyncPool, onDeleteQuestion, onBulkDelete }) {
   const exportToJson = () => {
     if (questions.length === 0) return alert("Dışa aktarılacak soru bulunamadı.");
     const dataStr = JSON.stringify({
-      schemaVersion: "quiz-platform-2.0",
+      schemaVersion: "quiz-platform-2.1",
       root: { questions: questions }
     }, null, 2);
     const blob = new Blob([dataStr], { type: "application/json" });
@@ -46,7 +46,7 @@ function DataExport({ questions, onSyncPool, onDeleteQuestion, onBulkDelete }) {
     const link = document.createElement("a");
     link.href = url;
     const date = new Date().toISOString().split('T')[0];
-    link.download = `esti-biraz-sorular-v2-${date}.json`;
+    link.download = `esti-biraz-sorular-v2.1-${date}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -94,13 +94,13 @@ function DataExport({ questions, onSyncPool, onDeleteQuestion, onBulkDelete }) {
       <datalist id="inline-large-decks">{uniqueLargeDecks.map(d => <option key={d} value={d} />)}</datalist>
       <datalist id="inline-small-decks">{inlineFilteredSmallDecks.map(d => <option key={d} value={d} />)}</datalist>
 
-      {/* AI PROMPT KILAVUZU (v2.0) */}
+      {/* AI PROMPT KILAVUZU (v2.1) */}
       <div style={{ padding: '25px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderTop: '4px solid #8b5cf6', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
-        <h3 style={{ marginTop: 0, color: '#4c1d95' }}>🤖 Eğitim Platformu JSON Üretme Promptu (v2.0)</h3>
+        <h3 style={{ marginTop: 0, color: '#4c1d95' }}>🤖 Eğitim Platformu JSON Üretme Promptu (v2.1)</h3>
         <pre style={{ backgroundColor: '#f8fafc', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px', color: '#334155', whiteSpace: 'pre-wrap', fontFamily: 'monospace', lineHeight: '1.5', maxHeight: '300px', overflowY: 'auto' }}>
 {`Sen deneyimli bir Flutter/Dart eğitmeni, ölçme-değerlendirme uzmanı ve eğitim teknolojileri içerik geliştiricisisin.
 
-Görevin, verilen ham soru havuzunu eğitim platformunda kullanılabilecek temiz ve öğretici JSON formatına dönüştürmektir.
+Görevin, verilen ham soru havuzunu kaynaklara dayalı, öğrenciye gerçekten öğreten ve eğitim platformunda doğrudan kullanılabilecek JSON formatına dönüştürmektir.
 
 ÇIKTI KURALLARI
 - Sadece geçerli JSON üret.
@@ -135,10 +135,10 @@ Her soru şu alanları içermelidir:
   },
   "source": {},
   "reviewStatus": "platform_ready",
-  "schemaVersion": "quiz-platform-2.0"
+  "schemaVersion": "quiz-platform-2.1"
 }
 
-KALDIRILACAK ALANLAR
+ÜRETİLMEYECEK ALANLAR
 Aşağıdaki alanları üretme:
 - questionType
 - learningOutcome
@@ -149,25 +149,33 @@ Aşağıdaki alanları üretme:
 
 SORU METNİ KURALLARI
 - Soru kodla çözülebiliyorsa gerekli kod mutlaka question alanında yer almalıdır.
-- “Yukarıdaki kod”, “verilen kod”, “aşağıdaki kod” deniyorsa ama kod yoksa, soruyu cevaplanabilir kılacak en küçük ve doğru kod bloğunu ekle.
+- “Yukarıdaki kod”, “verilen kod”, “aşağıdaki kod”, “bu getter”, “bu if koşulu” deniyorsa ama kod yoksa, soruyu cevaplanabilir kılacak en küçük ve doğru kod bloğunu ekle.
 - Kod satır sonlarını \\n ile koru.
 - Kod sorusunu kavramsal soruya dönüştürme; kodun çalışma mantığını koru.
 
 AÇIKLAMA KURALLARI
 - explanation ve lesson.deepExplanation aynı öğretici metni taşıyabilir.
 - Bu metin doğru cevabı “Doğru cevap X” diye tekrar etmemelidir.
-- Metin yalnızca soruda geçen konuyu anlatmalıdır; başka konuya atlamamalıdır.
+- Açıklama yalnızca soruda geçen konuyu anlatmalıdır; başka konuya atlamamalıdır.
 - Genel/geçiştirici kalıplar kullanma: “Bu kavramı anlamak gerekir”, “seçenekleri değerlendirirken...” gibi öğretmeyen cümleler yazma.
 - Öğrenci konuyu yeni öğreniyormuş gibi açıkla.
 - Kod varsa kodun nasıl çalıştığını adım adım ama kısa anlat.
-- Ortalama 80-160 kelime arası olmalı.
+- Ortalama 90-180 kelime arası olmalı.
 - summary, deepExplanation alanının 1-2 cümlelik çok kısa özeti olmalıdır.
 - codeExample, soruyla doğrudan ilişkili olmalıdır. İlgisiz örnek verme. Kod gerektirmeyen mobil ekosistem sorularında codeExample boş bırakılabilir.
 
 KAYNAK KULLANIMI
 - Verilen ders notları, kitaplar veya PDF kaynakları açıklama üretiminde temel alınmalıdır.
-- Kaynaktaki kavramı birebir uzun alıntılamadan, öğrencinin anlayacağı Türkçe ders notu gibi özetle.
+- Kaynaktaki kavramı uzun alıntılamadan, öğrencinin anlayacağı Türkçe ders notu gibi özetle.
 - Soru hangi konudaysa sadece o konuyla ilgili kaynak bilgisini kullan.
+- Örneğin:
+  - final/const/late/null safety için Dart değişkenleri ve null-aware operatörleri bölümlerini kullan.
+  - function/closure/parameter için Dart functions, optional/named parameters ve lexical scope bölümlerini kullan.
+  - class/constructor/getter/mixin/interface için Dart OOP, constructor, getter/setter, mixin bölümlerini kullan.
+  - widget/layout/state/routing için Flutter widget tree, Row/Column, State, setState, Navigator ve Route bölümlerini kullan.
+  - Future/Stream/FutureBuilder/StreamBuilder için async Dart ve Flutter async UI bölümlerini kullan.
+  - pubspec/assets/package/plugin için pubspec, dependencies, AssetBundle ve Flutter packages bölümlerini kullan.
+  - test/mockito/expect/widget tester için unit test, widget test, finder/matcher bölümlerini kullan.
 
 KALİTE KONTROL
 JSON üretmeden önce kontrol et:
@@ -178,6 +186,7 @@ JSON üretmeden önce kontrol et:
 - deepExplanation içinde doğru cevap tekrarı var mı? Varsa kaldır.
 - Genel/geçiştirici açıklama kalmış mı? Varsa yeniden yaz.
 - Kaldırılması istenen alanlar tamamen silinmiş mi?
+- codeExample soruyla ilişkili mi? Değilse düzelt veya boş bırak.
 
 [EĞİTİM NOTLARINI / HAM SORULARI BURAYA YAPIŞTIR]`}
         </pre>
