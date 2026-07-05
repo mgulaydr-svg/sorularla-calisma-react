@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import RichText from './RichText.jsx';
 
 function QuestionCard({ 
@@ -7,15 +7,21 @@ function QuestionCard({
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({ ...question });
-
+  
+  // Detaylı analiz alanını aç/kapat state'i
+  const [showDetails, setShowDetails] = useState(false);
+  
   const uniqueLargeDecks = allQuestions ? [...new Set(allQuestions.map(q => q.largeDeck).filter(Boolean))].sort() : [];
   const uniqueSmallDecks = allQuestions ? [...new Set(allQuestions
     .filter(q => !formData.largeDeck || q.largeDeck === formData.largeDeck)
     .map(q => q.smallDeck).filter(Boolean))].sort() : [];
 
+  // Soru değiştiğinde detayı gizle ve SAYFANIN EN ÜSTÜNE KAYDIR
   useEffect(() => {
+    setShowDetails(false);
     setFormData({ ...question });
-  }, [question, isEditing]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentIndex, question]);
 
   const handleSave = () => {
     if (!isAdmin) return alert('Bu işlem için yetkiniz yok.');
@@ -42,7 +48,7 @@ function QuestionCard({
     return (
       <div style={{ marginTop: '20px', padding: '30px', border: '1px solid #e2e8f0', borderTop: '4px solid #8b5cf6', borderRadius: '12px', backgroundColor: '#fff', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
         <h3 style={{ marginTop: 0, color: '#1e293b', marginBottom: '20px' }}>🔧 Soru Kartını Düzenle</h3>
-        <p style={{fontSize: '12px', color: '#64748b', marginBottom: '15px'}}>* Mini ders notu ve gelişmiş meta veriler sadece JSON içe aktarımı ile güncellenebilir. Temel alanları buradan düzenleyebilirsiniz.</p>
+        <p style={{fontSize: '12px', color: '#64748b', marginBottom: '15px'}}>* Mini ders notu (v2.0) ve gelişmiş meta veriler sadece JSON içe aktarımı ile güncellenebilir. Temel alanları buradan düzenleyebilirsiniz.</p>
         
         <datalist id="large-decks-list">{uniqueLargeDecks.map(deck => <option key={deck} value={deck} />)}</datalist>
         <datalist id="small-decks-list">{uniqueSmallDecks.map(deck => <option key={deck} value={deck} />)}</datalist>
@@ -93,7 +99,7 @@ function QuestionCard({
     <div>
       <div style={{ marginTop: '20px', padding: '30px', border: '1px solid #e2e8f0', borderTop: '4px solid #0ea5e9', borderRadius: '12px', backgroundColor: '#fff', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
         
-        {/* ÜST BİLGİ ALANI (GELİŞMİŞ ROZETLER) */}
+        {/* ÜST BİLGİ ALANI (v2.0 ROZETLERİ) */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
             
@@ -118,25 +124,13 @@ function QuestionCard({
                   🧠 {question.bloom}
                 </span>
               )}
-
-              {question.questionType && (
+              
+              {question.importance && (
                 <span style={{ backgroundColor: '#fdf4ff', color: '#a21caf', border: '1px solid #fae8ff', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '600' }}>
-                  🏷️ {question.questionType}
-                </span>
-              )}
-
-              {question.estimatedTimeSeconds && (
-                <span style={{ backgroundColor: '#fff7ed', color: '#c2410c', border: '1px solid #ffedd5', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '600' }}>
-                  ⏱️ {question.estimatedTimeSeconds} sn
+                  ⭐ Önem: {question.importance}/5
                 </span>
               )}
             </div>
-
-            {question.learningOutcome && (
-              <div style={{ fontSize: '12px', color: '#0f766e', backgroundColor: '#f0fdfa', padding: '8px 12px', borderRadius: '6px', borderLeft: '3px solid #14b8a6' }}>
-                <strong>Kazanım:</strong> {question.learningOutcome}
-              </div>
-            )}
           </div>
         </div>
 
@@ -167,11 +161,10 @@ function QuestionCard({
         </div>
       </div>
 
-      {/* CEVAP VE MİNİ DERS NOTU ALANI */}
+      {/* CEVAP VE v2.0 MİNİ DERS NOTU ALANI */}
       {selectedAnswer && (
         <div style={{ marginTop: '25px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
           
-          {/* Sonuç Bildirimi */}
           <div style={{ padding: '16px 20px', borderRadius: '10px', backgroundColor: selectedAnswer === question.correct ? '#ecfdf5' : '#fef2f2', border: `1px solid ${selectedAnswer === question.correct ? '#a7f3d0' : '#fecaca'}`, display: 'flex', alignItems: 'center', gap: '15px' }}>
             <div style={{ fontSize: '24px' }}>{selectedAnswer === question.correct ? '✅' : '❌'}</div>
             <div>
@@ -180,48 +173,64 @@ function QuestionCard({
             </div>
           </div>
 
-          {/* Standart Explanation (Geriye Dönük Uyumluluk) */}
-          {question.explanation && !question.lesson && (
-            <div style={{ padding: '20px', borderRadius: '10px', backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', borderLeft: '5px solid #2563eb' }}>
-              <h4 style={{ margin: '0 0 10px 0', color: '#1d4ed8', fontSize: '14px', textTransform: 'uppercase' }}>📖 Çözümleme</h4>
-              <div style={{ fontSize: '15px', lineHeight: '1.7', color: '#334155' }}><RichText text={question.explanation} /></div>
+          <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+            <div style={{ backgroundColor: '#1e293b', padding: '15px 20px', color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '20px' }}>🎓</span>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', letterSpacing: '0.5px' }}>Mini Ders Notu</h3>
             </div>
-          )}
 
-          {/* YENİ NESİL MİNİ DERS NOTU (LESSON OBJECT) */}
-          {question.lesson && (
-            <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
               
-              <div style={{ backgroundColor: '#1e293b', padding: '15px 20px', color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '20px' }}>🎓</span>
-                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', letterSpacing: '0.5px' }}>Mini Ders Notu</h3>
-              </div>
+              {/* ÖZET: HER ZAMAN AÇIK */}
+              {(question.lesson?.summary || question.explanation) && (
+                 <div>
+                   <h4 style={{ margin: '0 0 8px 0', color: '#0f172a', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '5px' }}><span>📌</span> Özet</h4>
+                   <p style={{ margin: 0, fontSize: '14px', color: '#334155', lineHeight: '1.6' }}>
+                     {question.lesson?.summary ? question.lesson.summary : <RichText text={question.explanation} />}
+                   </p>
+                 </div>
+              )}
+              
+              {/* DETAY GÖSTER/GİZLE BUTONU */}
+              {(question.lesson?.deepExplanation || question.lesson?.codeExample || question.lesson?.cheatSheet) && (
+                <button 
+                  onClick={() => setShowDetails(!showDetails)}
+                  style={{ padding: '12px 15px', backgroundColor: '#f1f5f9', color: '#0369a1', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '5px', transition: 'all 0.2s' }}
+                >
+                  <span>{showDetails ? '📖 Detaylı Analizi Kapat' : '📖 Detaylı Analizi ve Kodları Gör'}</span>
+                  <span style={{ fontSize: '12px' }}>{showDetails ? '▲' : '▼'}</span>
+                </button>
+              )}
 
-              <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {question.lesson.summary && (
-                   <div><h4 style={{ margin: '0 0 8px 0', color: '#0f172a', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '5px' }}><span>📌</span> Özet</h4><p style={{ margin: 0, fontSize: '14px', color: '#334155', lineHeight: '1.6' }}>{question.lesson.summary}</p></div>
-                )}
-                
-                {question.lesson.deepExplanation && (
-                   <div style={{ backgroundColor: '#f8fafc', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0' }}><h4 style={{ margin: '0 0 8px 0', color: '#0369a1', fontSize: '15px' }}>🔍 Detaylı Analiz</h4><div style={{ margin: 0, fontSize: '14px', color: '#334155', lineHeight: '1.6' }}><RichText text={question.lesson.deepExplanation} /></div></div>
-                )}
-
-                <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-                  {question.lesson.tip && (
-                    <div style={{ flex: 1, minWidth: '250px', backgroundColor: '#fffbeb', padding: '15px', borderRadius: '8px', border: '1px solid #fef3c7' }}><h4 style={{ margin: '0 0 8px 0', color: '#b45309', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '5px' }}><span>💡</span> İpucu</h4><p style={{ margin: 0, fontSize: '13px', color: '#78350f', lineHeight: '1.5' }}>{question.lesson.tip}</p></div>
+              {/* DETAYLI İÇERİK: SADECE BUTONA BASILINCA AÇILIR */}
+              {showDetails && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '5px', padding: '20px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  {question.lesson?.deepExplanation && (
+                    <div>
+                      <h4 style={{ margin: '0 0 8px 0', color: '#0369a1', fontSize: '15px' }}>🔍 Detaylı Analiz</h4>
+                      <div style={{ margin: 0, fontSize: '14px', color: '#334155', lineHeight: '1.6' }}><RichText text={question.lesson.deepExplanation} /></div>
+                    </div>
                   )}
-                  {question.lesson.commonMistake && (
-                    <div style={{ flex: 1, minWidth: '250px', backgroundColor: '#fef2f2', padding: '15px', borderRadius: '8px', border: '1px solid #fee2e2' }}><h4 style={{ margin: '0 0 8px 0', color: '#b91c1c', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '5px' }}><span>⚠️</span> Sık Yapılan Hata</h4><p style={{ margin: 0, fontSize: '13px', color: '#7f1d1d', lineHeight: '1.5' }}>{question.lesson.commonMistake}</p></div>
+                  
+                  {question.lesson?.codeExample && (
+                    <div>
+                      <h4 style={{ margin: '0 0 8px 0', color: '#0f172a', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '5px' }}><span>💻</span> Kod Örneği</h4>
+                      <pre style={{ backgroundColor: '#0f172a', color: '#e2e8f0', padding: '15px', borderRadius: '8px', fontSize: '13px', overflowX: 'auto', margin: 0, fontFamily: 'monospace', lineHeight: '1.5' }}>{question.lesson.codeExample}</pre>
+                    </div>
+                  )}
+
+                  {question.lesson?.cheatSheet && question.lesson.cheatSheet.length > 0 && (
+                    <div>
+                      <h4 style={{ margin: '0 0 8px 0', color: '#0f172a', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '5px' }}><span>📝</span> Hızlı Tekrar (Cheat Sheet)</h4>
+                      <ul style={{ margin: 0, paddingLeft: '20px', color: '#334155', fontSize: '14px', lineHeight: '1.6' }}>
+                        {question.lesson.cheatSheet.map((item, i) => <li key={i}>{item}</li>)}
+                      </ul>
+                    </div>
                   )}
                 </div>
-
-                {question.lesson.codeExample && (
-                   <div><h4 style={{ margin: '0 0 8px 0', color: '#0f172a', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '5px' }}><span>💻</span> Kod Örneği</h4>
-                   <pre style={{ backgroundColor: '#0f172a', color: '#e2e8f0', padding: '15px', borderRadius: '8px', fontSize: '13px', overflowX: 'auto', margin: 0, fontFamily: 'monospace', lineHeight: '1.5' }}>{question.lesson.codeExample}</pre></div>
-                )}
-              </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       )}
 

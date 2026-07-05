@@ -12,25 +12,41 @@ function DataExport({ questions, onSyncPool, onDeleteQuestion, onBulkDelete }) {
   const bulkFilteredSmallDecks = [...new Set(questions.filter(q => !bulkLargeDeck || q.largeDeck === bulkLargeDeck).map(q => q.smallDeck).filter(Boolean))].sort();
   const inlineFilteredSmallDecks = [...new Set(questions.filter(q => !editFormData.largeDeck || q.largeDeck === editFormData.largeDeck).map(q => q.smallDeck).filter(Boolean))].sort();
 
+  // 🚀 v2.0 IMPORT MANTIĞI: İster Array gelsin, ister { root: { questions: [...] } } gelsin tanır.
   const handleImport = () => {
     try {
       const parsed = JSON.parse(importText);
-      const newQuestions = Array.isArray(parsed) ? parsed : [parsed];
+      let newQuestions = [];
+      
+      if (Array.isArray(parsed)) {
+        newQuestions = parsed; // Gelen saf bir liste ise
+      } else if (parsed && parsed.root && parsed.root.questions && Array.isArray(parsed.root.questions)) {
+        newQuestions = parsed.root.questions; // Gelen v2.0 root sarmalı ise
+      } else if (parsed && parsed.questions && Array.isArray(parsed.questions)) {
+        newQuestions = parsed.questions; // Sadece questions sarmalı ise
+      } else {
+        newQuestions = [parsed]; // Tek bir obje ise
+      }
+
+      if (newQuestions.length === 0) return alert("JSON içinde aktarılabilir bir soru (questions) bulunamadı.");
+
       onSyncPool([...questions, ...newQuestions]); // BULUTA GÖNDER
       setImportText('');
-    } catch (e) { alert("Geçerli bir JSON formatı girmediniz."); }
+    } catch (e) { alert("Geçerli bir JSON formatı girmediniz. Lütfen sözdizimi hatası olmadığını kontrol edin."); }
   };
 
-  // JSON DIŞA AKTARMA FONKSİYONU
   const exportToJson = () => {
     if (questions.length === 0) return alert("Dışa aktarılacak soru bulunamadı.");
-    const dataStr = JSON.stringify(questions, null, 2);
+    const dataStr = JSON.stringify({
+      schemaVersion: "quiz-platform-2.0",
+      root: { questions: questions }
+    }, null, 2);
     const blob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
     const date = new Date().toISOString().split('T')[0];
-    link.download = `esti-biraz-soru-havuzu-${date}.json`;
+    link.download = `esti-biraz-sorular-v2-${date}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -44,15 +60,14 @@ function DataExport({ questions, onSyncPool, onDeleteQuestion, onBulkDelete }) {
     if (selectedIds.length === 0 || (!bulkLargeDeck && !bulkSmallDeck)) return alert('Eksik bilgi girdiniz.');
     if (window.confirm(`${selectedIds.length} sorunun destesini bulutta güncelliyorum. Onaylıyor musun?`)) {
       const updatedPool = questions.map(q => selectedIds.includes(q.id) ? { ...q, largeDeck: bulkLargeDeck || q.largeDeck, smallDeck: bulkSmallDeck || q.smallDeck } : q);
-      onSyncPool(updatedPool); // BULUTA GÖNDER
+      onSyncPool(updatedPool);
       setSelectedIds([]); setBulkLargeDeck(''); setBulkSmallDeck('');
     }
   };
 
-  // TOPLU SİLME FONKSİYONU
   const applyBulkDelete = () => {
     if (selectedIds.length === 0) return;
-    if (window.confirm(`DİKKAT! Seçilen ${selectedIds.length} soruyu veritabanından kalıcı olarak silmek istediğine emin misin? Bu işlem geri alınamaz.`)) {
+    if (window.confirm(`DİKKAT! Seçilen ${selectedIds.length} soruyu kalıcı olarak silmek istediğine emin misin?`)) {
       onBulkDelete(selectedIds);
       setSelectedIds([]);
     }
@@ -62,13 +77,13 @@ function DataExport({ questions, onSyncPool, onDeleteQuestion, onBulkDelete }) {
 
   const saveInlineEdit = () => {
     const updatedPool = questions.map(q => q.id === editingId ? editFormData : q);
-    onSyncPool(updatedPool); // BULUTA GÖNDER
+    onSyncPool(updatedPool);
     setEditingId(null);
   };
 
   const deleteQuestion = (id) => {
     if(window.confirm('Bu soruyu veritabanından kalıcı olarak silmek istediğine emin misin?')) {
-       onDeleteQuestion(id); // BULUTTAN SİL
+       onDeleteQuestion(id);
     }
   };
 
@@ -79,86 +94,76 @@ function DataExport({ questions, onSyncPool, onDeleteQuestion, onBulkDelete }) {
       <datalist id="inline-large-decks">{uniqueLargeDecks.map(d => <option key={d} value={d} />)}</datalist>
       <datalist id="inline-small-decks">{inlineFilteredSmallDecks.map(d => <option key={d} value={d} />)}</datalist>
 
-      {/* AI PROMPT KILAVUZU */}
+      {/* AI PROMPT KILAVUZU (v2.0) */}
       <div style={{ padding: '25px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderTop: '4px solid #8b5cf6', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
-        <h3 style={{ marginTop: 0, color: '#4c1d95' }}>🤖 Sihirli AI Soru Dönüştürücü Promptu</h3>
-        <p style={{ fontSize: '14px', color: '#4b5563', lineHeight: '1.5' }}>
-          Eğitim dökümanlarını, notlarını veya test sorularını sisteme tek seferde kusursuz yüklemek için aşağıdaki promptu kopyalayıp <strong>Gemini, ChatGPT veya Claude</strong>'a yapıştırabilirsin. Çıkan sonucu hemen altındaki içe aktarma alanına yüklemen yeterlidir.
-        </p>
+        <h3 style={{ marginTop: 0, color: '#4c1d95' }}>🤖 Eğitim Platformu JSON Üretme Promptu (v2.0)</h3>
         <pre style={{ backgroundColor: '#f8fafc', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px', color: '#334155', whiteSpace: 'pre-wrap', fontFamily: 'monospace', lineHeight: '1.5', maxHeight: '300px', overflowY: 'auto' }}>
-{`MASTER PROMPT – Mikro-Öğrenme Odaklı JSON Soru Bankası Üretimi
-Sen deneyimli bir eğitim tasarımcısı, ölçme-değerlendirme uzmanı ve yazılım geliştiricisisin. Görevin, verilen eğitim notlarını profesyonel bir mikro-öğrenme soru dizisine dönüştürmektir.
+{`Sen deneyimli bir eğitmen, ölçme-değerlendirme uzmanı ve içerik geliştiricisisin.
+Görevin, verilen eğitim notlarını/ham soruları platformumuzun v2.0 JSON formatına dönüştürmektir.
 
-Genel Kurallar
-• Sadece geçerli (valid) JSON Array üret. Markdown ( \`\`\`json ) kullanma!
-• Çıktı doğrudan [ { ... } ] formatında olmalıdır.
+ÇIKTI KURALLARI:
+- Sadece geçerli JSON üret. Markdown kullanma.
+- Çıktı tek bir JSON nesnesi olmalı ve root nesnesi içinde questions dizisi barındırmalıdır.
 
-Soru Şeması:
-[
-  {
-    "id": "benzersiz_uuid",
-    "largeDeck": "Ana Konu",
-    "smallDeck": "Alt Konu",
-    "difficulty": "Kolay/Orta/Zor",
-    "difficultyScore": 75,
-    "bloom": "Hatırlama/Anlama/Uygulama/Analiz/Değerlendirme/Oluşturma",
-    "questionType": "Kavramsal Bilgi / Kod Çıktısı / Hata Analizi vb.",
-    "learningOutcome": "Ölçülen öğrenme kazanımı cümlesi",
-    "tags": ["etiket1", "etiket2", "etiket3"],
-    "question": "Soru metni... (Kod varsa \\n kullan)",
-    "options": { "A": "...", "B": "...", "C": "...", "D": "...", "E": "..." },
-    "correct": "A",
-    "explanation": "Standart kısa açıklama...",
-    "estimatedTimeSeconds": 60,
-    "lesson": {
-      "summary": "Kısa konu özeti",
-      "deepExplanation": "Ayrıntılı kavram analizi",
-      "wrongOptionAnalysis": { 
-        "A": "Neden yanlış veya doğru...", 
-        "B": "Neden yanlış...", 
-        "C": "...", "D": "...", "E": "..." 
-      },
-      "tip": "Soru çözüm ipucu",
-      "commonMistake": "Sık yapılan hata",
-      "codeExample": "Varsa kod örneği"
-    }
+SORU ŞEMASI (v2.0):
+{
+  "schemaVersion": "quiz-platform-2.0",
+  "root": {
+    "questions": [
+      {
+        "id": "benzersiz_uuid",
+        "largeDeck": "Ana Konu",
+        "smallDeck": "Alt Konu",
+        "difficulty": "Kolay|Orta|Zor",
+        "difficultyScore": 75,
+        "bloom": "Hatırlama|Anlama|Uygulama|Analiz|Değerlendirme",
+        "importance": 5,
+        "examFrequency": "High",
+        "tags": ["etiket1", "etiket2"],
+        "question": "Soru metni...",
+        "options": {"A": "...", "B": "...", "C": "...", "D": "...", "E": "..."},
+        "correct": "A",
+        "explanation": "Öğretici açıklama...",
+        "lesson": {
+          "summary": "1-2 cümlelik kısa konu özeti",
+          "deepExplanation": "Kavramın detaylı analizi ve mantığı",
+          "codeExample": "Varsa kısa kod örneği",
+          "cheatSheet": ["Hızlı tekrar maddesi 1", "Hızlı tekrar maddesi 2"],
+          "relatedTopics": [],
+          "prerequisites": [],
+          "nextTopics": []
+        }
+      }
+    ]
   }
-]
+}
 
-Dağılım: %35 Kolay, %45 Orta, %20 Zor.
-Eğitim Notları / Ham Sorular:
-[BURAYA YAPIŞTIR]`}
+Eğitim Notları:
+[İÇERİĞİ BURAYA YAPIŞTIRIN]`}
         </pre>
       </div>
 
-      {/* JSON İÇE AKTARMA KUTUSU */}
       <div style={{ padding: '25px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px' }}>
         <h3 style={{ marginTop: 0 }}>📥 JSON İçe Aktar ve Buluta Gönder</h3>
-        <textarea value={importText} onChange={(e) => setImportText(e.target.value)} style={{ width: '100%', height: '100px', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', marginBottom: '15px' }} placeholder="JSON verisini buraya yapıştırın..." />
+        <textarea value={importText} onChange={(e) => setImportText(e.target.value)} style={{ width: '100%', height: '100px', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', marginBottom: '15px' }} placeholder="v2.0 JSON verisini buraya yapıştırın..." />
         <button onClick={handleImport} style={{ padding: '12px 20px', backgroundColor: '#8b5cf6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Havuza Ekle</button>
       </div>
 
-      {/* SEÇİLİ ÖĞELER PANELİ (TOPLU TAŞI VE TOPLU SİL) */}
       {selectedIds.length > 0 && (
         <div style={{ padding: '20px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
           <strong style={{ color: '#166534' }}>{selectedIds.length} Soru Seçildi</strong>
           <input list="bulk-large-decks" placeholder="Yeni Ana Deste..." value={bulkLargeDeck} onChange={(e) => setBulkLargeDeck(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', flex: 1, minWidth: '130px' }} />
           <input list="bulk-small-decks" placeholder="Yeni Alt Deste..." value={bulkSmallDeck} onChange={(e) => setBulkSmallDeck(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', flex: 1, minWidth: '130px' }} />
           <button onClick={applyBulkEdit} style={{ padding: '8px 16px', backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Toplu Taşı</button>
-          
-          {/* YENİ EKLENEN TOPLU SİLME BUTONU */}
           <button onClick={applyBulkDelete} style={{ padding: '8px 16px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', marginLeft: 'auto' }}>🗑 Seçilenleri Sil</button>
         </div>
       )}
 
-      {/* LİSTE VE DIŞA AKTARMA BAŞLIĞI */}
       <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
         <div style={{ padding: '15px 20px', backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ margin: 0, fontSize: '16px' }}>Soru Havuzu ({questions.length} Soru)</h3>
-          
-          {/* YENİ EKLENEN JSON DIŞA AKTAR BUTONU */}
           <button onClick={exportToJson} style={{ padding: '8px 16px', backgroundColor: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>📤</span> Yedekle (JSON)
+            <span>📤</span> Yedekle (JSON v2.0)
           </button>
         </div>
         <div style={{ overflowX: 'auto' }}>
