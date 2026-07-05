@@ -98,48 +98,88 @@ function DataExport({ questions, onSyncPool, onDeleteQuestion, onBulkDelete }) {
       <div style={{ padding: '25px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderTop: '4px solid #8b5cf6', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
         <h3 style={{ marginTop: 0, color: '#4c1d95' }}>🤖 Eğitim Platformu JSON Üretme Promptu (v2.0)</h3>
         <pre style={{ backgroundColor: '#f8fafc', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px', color: '#334155', whiteSpace: 'pre-wrap', fontFamily: 'monospace', lineHeight: '1.5', maxHeight: '300px', overflowY: 'auto' }}>
-{`Sen deneyimli bir eğitmen, ölçme-değerlendirme uzmanı ve içerik geliştiricisisin.
-Görevin, verilen eğitim notlarını/ham soruları platformumuzun v2.0 JSON formatına dönüştürmektir.
+{`Sen deneyimli bir Flutter/Dart eğitmeni, ölçme-değerlendirme uzmanı ve eğitim teknolojileri içerik geliştiricisisin.
 
-ÇIKTI KURALLARI:
-- Sadece geçerli JSON üret. Markdown kullanma.
-- Çıktı tek bir JSON nesnesi olmalı ve root nesnesi içinde questions dizisi barındırmalıdır.
+Görevin, verilen ham soru havuzunu eğitim platformunda kullanılabilecek temiz ve öğretici JSON formatına dönüştürmektir.
 
-SORU ŞEMASI (v2.0):
+ÇIKTI KURALLARI
+- Sadece geçerli JSON üret.
+- Markdown, kod bloğu veya JSON dışı açıklama yazma.
+- Çıktı tek bir JSON nesnesi olmalıdır.
+- Ana yapı şu alanları içermelidir: schemaVersion, course, stats, references, questions.
+
+SORU NESNESİ ŞEMASI
+Her soru şu alanları içermelidir:
 {
-  "schemaVersion": "quiz-platform-2.0",
-  "root": {
-    "questions": [
-      {
-        "id": "benzersiz_uuid",
-        "largeDeck": "Ana Konu",
-        "smallDeck": "Alt Konu",
-        "difficulty": "Kolay|Orta|Zor",
-        "difficultyScore": 75,
-        "bloom": "Hatırlama|Anlama|Uygulama|Analiz|Değerlendirme",
-        "importance": 5,
-        "examFrequency": "High",
-        "tags": ["etiket1", "etiket2"],
-        "question": "Soru metni...",
-        "options": {"A": "...", "B": "...", "C": "...", "D": "...", "E": "..."},
-        "correct": "A",
-        "explanation": "Öğretici açıklama...",
-        "lesson": {
-          "summary": "1-2 cümlelik kısa konu özeti",
-          "deepExplanation": "Kavramın detaylı analizi ve mantığı",
-          "codeExample": "Varsa kısa kod örneği",
-          "cheatSheet": ["Hızlı tekrar maddesi 1", "Hızlı tekrar maddesi 2"],
-          "relatedTopics": [],
-          "prerequisites": [],
-          "nextTopics": []
-        }
-      }
-    ]
-  }
+  "id": "",
+  "largeDeck": "",
+  "smallDeck": "",
+  "difficulty": "Kolay|Orta|Zor",
+  "difficultyScore": 1,
+  "bloom": "Hatırlama|Anlama|Uygulama|Analiz|Değerlendirme",
+  "importance": 1,
+  "examFrequency": "Low|Medium|High",
+  "tags": [],
+  "question": "",
+  "options": {"A": "", "B": "", "C": "", "D": "", "E": ""},
+  "correct": "A",
+  "explanation": "",
+  "lesson": {
+    "summary": "",
+    "deepExplanation": "",
+    "codeExample": "",
+    "cheatSheet": [],
+    "relatedTopics": [],
+    "prerequisites": [],
+    "nextTopics": []
+  },
+  "source": {},
+  "reviewStatus": "platform_ready",
+  "schemaVersion": "quiz-platform-2.0"
 }
 
-Eğitim Notları:
-[İÇERİĞİ BURAYA YAPIŞTIRIN]`}
+KALDIRILACAK ALANLAR
+Aşağıdaki alanları üretme:
+- questionType
+- learningOutcome
+- estimatedTimeSeconds
+- wrongOptionAnalysis
+- tip
+- commonMistake
+
+SORU METNİ KURALLARI
+- Soru kodla çözülebiliyorsa gerekli kod mutlaka question alanında yer almalıdır.
+- “Yukarıdaki kod”, “verilen kod”, “aşağıdaki kod” deniyorsa ama kod yoksa, soruyu cevaplanabilir kılacak en küçük ve doğru kod bloğunu ekle.
+- Kod satır sonlarını \\n ile koru.
+- Kod sorusunu kavramsal soruya dönüştürme; kodun çalışma mantığını koru.
+
+AÇIKLAMA KURALLARI
+- explanation ve lesson.deepExplanation aynı öğretici metni taşıyabilir.
+- Bu metin doğru cevabı “Doğru cevap X” diye tekrar etmemelidir.
+- Metin yalnızca soruda geçen konuyu anlatmalıdır; başka konuya atlamamalıdır.
+- Genel/geçiştirici kalıplar kullanma: “Bu kavramı anlamak gerekir”, “seçenekleri değerlendirirken...” gibi öğretmeyen cümleler yazma.
+- Öğrenci konuyu yeni öğreniyormuş gibi açıkla.
+- Kod varsa kodun nasıl çalıştığını adım adım ama kısa anlat.
+- Ortalama 80-160 kelime arası olmalı.
+- summary, deepExplanation alanının 1-2 cümlelik çok kısa özeti olmalıdır.
+- codeExample, soruyla doğrudan ilişkili olmalıdır. İlgisiz örnek verme. Kod gerektirmeyen mobil ekosistem sorularında codeExample boş bırakılabilir.
+
+KAYNAK KULLANIMI
+- Verilen ders notları, kitaplar veya PDF kaynakları açıklama üretiminde temel alınmalıdır.
+- Kaynaktaki kavramı birebir uzun alıntılamadan, öğrencinin anlayacağı Türkçe ders notu gibi özetle.
+- Soru hangi konudaysa sadece o konuyla ilgili kaynak bilgisini kullan.
+
+KALİTE KONTROL
+JSON üretmeden önce kontrol et:
+- Tüm sorularda A-E seçenekleri var mı?
+- correct alanı A-E harflerinden biri mi?
+- Kod gerektiren sorularda soru metninde kod var mı?
+- explanation soruyla aynı konudan mı bahsediyor?
+- deepExplanation içinde doğru cevap tekrarı var mı? Varsa kaldır.
+- Genel/geçiştirici açıklama kalmış mı? Varsa yeniden yaz.
+- Kaldırılması istenen alanlar tamamen silinmiş mi?
+
+[EĞİTİM NOTLARINI / HAM SORULARI BURAYA YAPIŞTIR]`}
         </pre>
       </div>
 
